@@ -1,0 +1,118 @@
+{
+  "Metadata": {
+    "description": "Predict the 2026 FIFA World Cup bracket, share your picks, and export a PDF.",
+    "title": "2026 BRACKET"
+  },
+  "ConfirmacionMetadata": {
+    "title": "Prediction saved | 2026 BRACKET"
+  },
+  "Nav": {
+    "bracket": "Bracket",
+    "registerPrediction": "Register prediction",
+    "siteTitle": "2026 BRACKET"
+  },
+  "LanguageSwitcher": {
+    "label": "Language",
+    "toEnglish": "English",
+    "toSpanish": "Español"
+  },
+  "Footer": {
+    "copyright": "© 2026 Kinetic Arena. All rights reserved.",
+    "links": {
+      "contact": "Contact support",
+      "fifa": "FIFA official",
+      "privacy": "Privacy policy",
+      "rules": "Tournament rules"
+    },
+    "title": "2026 BRACKET CALCULATOR"
+  },
+  "Bracket": {
+    "heroSubtitle": "2026 World Cup — phase-by-phase prediction.",
+    "heroTitle": "Tournament dashboard",
+    "phase": {
+      "final": "Final — pick the champion",
+      "groups": "Group stage",
+      "qf": "Quarter-finals",
+      "r16": "Round of 16",
+      "sf": "Semi-finals",
+      "third": "Third place"
+    },
+    "next": {
+      "final": "Next: third place",
+      "groups": "Next: round of 16",
+      "qf": "Next: semi-finals",
+      "r16": "Next: quarter-finals",
+      "sf": "Next: final",
+      "third": ""
+    },
+    "progressLabel": "Bracket progress",
+    "knockout": {
+      "r16": "Round of 16 — pick the winner of each match",
+      "qf": "Quarter-finals",
+      "sf": "Semi-finals",
+      "final": "Final",
+      "third": "Third place"
+    },
+    "bracketCompleteTitle": "Bracket complete",
+    "bracketCompleteLine1": "Fill in the form on the right and tap",
+    "bracketCompleteStrong": "Submit prediction",
+    "bracketCompleteLine2": "to save and view your summary.",
+    "hintR16": "Pick a winner in all 8 matches to continue.",
+    "hintQf": "Pick a winner in all 4 matches.",
+    "hintSf": "Pick a winner in both semi-finals.",
+    "hintFinal": "Pick the champion.",
+    "hintThirdPick": "Pick the winner of the third-place match.",
+    "sidebarLockedTitle": "Registration locked",
+    "sidebarLockedBody": "Complete every bracket stage through third place. Then you can enter your details and finish."
+  },
+  "GroupPanel": {
+    "badge": "Pick 1st & 2nd",
+    "intro": "Only first and second in the group count for the round of 16; the rest is informational.",
+    "firstPlace": "1st place",
+    "secondPlace": "2nd place",
+    "restTitle": "3rd & 4th (fixture order)"
+  },
+  "KnockoutRound": {
+    "match": "Match {id}",
+    "vs": "VS"
+  },
+  "Registration": {
+    "title": "Register prediction",
+    "nameLabel": "Full name",
+    "namePlaceholder": "e.g. Jane Doe",
+    "emailLabel": "Email address",
+    "emailPlaceholder": "jane@example.com",
+    "whatsappLabel": "WhatsApp",
+    "whatsappPrefix": "+1",
+    "whatsappPlaceholder": "(555) 000-0000",
+    "progress": "Progress: {percent}%",
+    "submit": "Submit prediction",
+    "submitting": "Saving…",
+    "footerHint": "Complete the bracket (through third place) and your contact details to submit.",
+    "scoringTitle": "Scoring rules",
+    "scoringBody": "10 points per correct winner, 25 for correct score, and 50 for the exact bracket path.",
+    "errorGeneric": "Could not reach the server. Please try again.",
+    "errorStatus": "Error {status}"
+  },
+  "SuccessHeader": {
+    "confirmation": "Confirmation"
+  },
+  "Success": {
+    "loading": "Loading…",
+    "congrats": "CONGRATULATIONS!",
+    "subtitle": "Your prediction has been registered for the 2026 World Cup Final prize draw.",
+    "entryId": "Entry ID: {id}",
+    "predictedWinner": "Predicted winner",
+    "thirdPlace": "3rd place: {code}",
+    "pathSummary": "Path to the final",
+    "semifinalPick": "Semi-final — your pick: {code}",
+    "downloadPdf": "Download full bracket (PDF)",
+    "challengeTitle": "Challenge your friends",
+    "challengeBody": "Predictions are better shared. Share your bracket and see who knows the beautiful game best.",
+    "winnersNote": "Winners will be announced on July 20th, 2026 via registered email.",
+    "anotherHint": "A new entry ID will be generated when you submit another prediction.",
+    "anotherCta": "Make another prediction",
+    "shareText": "My 2026 World Cup bracket is locked in on 2026 BRACKET. Entry {entryId}. {origin}",
+    "instagramAlert": "Copy your bracket screenshot or link and share it from the Instagram app."
+  }
+}

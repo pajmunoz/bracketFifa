@@ -1,36 +1,46 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 2026 BRACKET
 
-## Getting Started
+Next.js 16 + App Router, i18n (`next-intl`), predicción de bracket y envío a MySQL.
 
-First, run the development server:
+## Desarrollo local
 
 ```bash
+npm install
+cp .env.example .env
+# Edita .env con tus credenciales MySQL
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Abre [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Variables de entorno
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Copia [`.env.example`](./.env.example) y rellena los valores. En Vercel: **Settings → Environment Variables** (Production / Preview según necesites).
 
-## Learn More
+| Variable | Descripción |
+|----------|-------------|
+| `DB_HOST` | Host MySQL accesible desde internet |
+| `DB_PORT` | Puerto (por defecto `3306`) |
+| `DB_USER` | Usuario |
+| `DB_PASSWORD` | Contraseña |
+| `DB_NAME` | Base de datos |
+| `DB_POOL_LIMIT` | Opcional, pool (por defecto `3`) |
+| `DB_SSL` | Opcional, `true` si el servidor exige TLS |
+| `DB_SSL_REJECT_UNAUTHORIZED` | Opcional, `false` solo si usas certificados autofirmados |
 
-To learn more about Next.js, take a look at the following resources:
+Sin variables de DB, `/api/health` responde `db: not_configured`; las rutas que insertan/consultan fallarán hasta configurarlas.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Deploy en Vercel
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. Conecta el repositorio en [vercel.com/new](https://vercel.com/new).
+2. **Framework Preset:** Next.js (detección automática).
+3. **Build:** `npm run build` (por defecto). **Install:** `npm install`.
+4. Añade las variables de entorno anteriores en el proyecto Vercel.
+5. La base MySQL debe permitir conexiones **remotas** desde las IPs de Vercel (o usar un proveedor con acceso público y SSL). Muchos planes “solo localhost” de hosting compartido no sirven para serverless.
 
-## Deploy on Vercel
+Tras el deploy, la app y `/api/submissions` comparten el mismo dominio (`fetch` relativo funciona sin CORS extra).
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Documentación
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- [Next.js](https://nextjs.org/docs)
+- [next-intl](https://next-intl.dev)

@@ -1,0 +1,118 @@
+{
+  "Metadata": {
+    "description": "Predice el bracket del Mundial FIFA 2026, comparte tus picks y exporta un PDF.",
+    "title": "2026 BRACKET"
+  },
+  "ConfirmacionMetadata": {
+    "title": "Predicción registrada | 2026 BRACKET"
+  },
+  "Nav": {
+    "bracket": "Bracket",
+    "registerPrediction": "Registrar predicción",
+    "siteTitle": "2026 BRACKET"
+  },
+  "LanguageSwitcher": {
+    "label": "Idioma",
+    "toEnglish": "English",
+    "toSpanish": "Español"
+  },
+  "Footer": {
+    "copyright": "© 2026 Kinetic Arena. Todos los derechos reservados.",
+    "links": {
+      "contact": "Soporte / contacto",
+      "fifa": "FIFA oficial",
+      "privacy": "Privacidad",
+      "rules": "Reglas del torneo"
+    },
+    "title": "2026 BRACKET CALCULATOR"
+  },
+  "Bracket": {
+    "heroSubtitle": "Mundial 2026 — predicción por fases.",
+    "heroTitle": "Panel del torneo",
+    "phase": {
+      "final": "Final — elige al campeón",
+      "groups": "Fase de grupos",
+      "qf": "Cuartos de final",
+      "r16": "Octavos de final",
+      "sf": "Semifinales",
+      "third": "Tercer lugar"
+    },
+    "next": {
+      "final": "Siguiente: tercer lugar",
+      "groups": "Siguiente: octavos de final",
+      "qf": "Siguiente: semifinales",
+      "r16": "Siguiente: cuartos de final",
+      "sf": "Siguiente: final",
+      "third": ""
+    },
+    "progressLabel": "Avance del bracket",
+    "knockout": {
+      "r16": "Octavos de final — elige al ganador de cada partido",
+      "qf": "Cuartos de final",
+      "sf": "Semifinales",
+      "final": "Final",
+      "third": "Tercer lugar"
+    },
+    "bracketCompleteTitle": "Bracket completo",
+    "bracketCompleteLine1": "Completa el formulario a la derecha y pulsa",
+    "bracketCompleteStrong": "Finalizar predicción",
+    "bracketCompleteLine2": "para guardar y ver tu resumen.",
+    "hintR16": "Elige ganador en los 8 partidos para continuar.",
+    "hintQf": "Elige ganador en los 4 partidos.",
+    "hintSf": "Elige ganador en las 2 semifinales.",
+    "hintFinal": "Elige al campeón.",
+    "hintThirdPick": "Elige al ganador del partido por el tercer lugar.",
+    "sidebarLockedTitle": "Registro bloqueado",
+    "sidebarLockedBody": "Completa todas las fases del bracket hasta elegir el tercer lugar. Luego podrás ingresar tus datos y finalizar."
+  },
+  "GroupPanel": {
+    "badge": "Elige 1º y 2º",
+    "intro": "Solo cuentan el primero y el segundo del grupo para octavos; el resto es informativo.",
+    "firstPlace": "1.er lugar",
+    "secondPlace": "2.º lugar",
+    "restTitle": "3.º y 4.º (orden del fixture)"
+  },
+  "KnockoutRound": {
+    "match": "Partido {id}",
+    "vs": "VS"
+  },
+  "Registration": {
+    "title": "Registrar predicción",
+    "nameLabel": "Nombre completo",
+    "namePlaceholder": "ej. Juan Pérez",
+    "emailLabel": "Correo electrónico",
+    "emailPlaceholder": "juan@ejemplo.com",
+    "whatsappLabel": "WhatsApp",
+    "whatsappPrefix": "+1",
+    "whatsappPlaceholder": "(555) 000-0000",
+    "progress": "Progreso: {percent}%",
+    "submit": "Finalizar predicción",
+    "submitting": "Guardando…",
+    "footerHint": "Completa el bracket (hasta 3er lugar) y tus datos de contacto para enviar.",
+    "scoringTitle": "Reglas de puntaje",
+    "scoringBody": "10 puntos por ganador correcto, 25 por marcador correcto y 50 por la llave exacta.",
+    "errorGeneric": "No se pudo conectar con el servidor. Intenta de nuevo.",
+    "errorStatus": "Error {status}"
+  },
+  "SuccessHeader": {
+    "confirmation": "Confirmación"
+  },
+  "Success": {
+    "loading": "Cargando…",
+    "congrats": "¡FELICIDADES!",
+    "subtitle": "Tu predicción quedó registrada para el sorteo del premio de la final del Mundial 2026.",
+    "entryId": "ID de entrada: {id}",
+    "predictedWinner": "Campeón predicho",
+    "thirdPlace": "3.er lugar: {code}",
+    "pathSummary": "Resumen del camino a la final",
+    "semifinalPick": "Semifinal — tu pick: {code}",
+    "downloadPdf": "Descargar bracket completo (PDF)",
+    "challengeTitle": "Reta a tus amigos",
+    "challengeBody": "Las predicciones se disfrutan más compartidas. Comparte tu bracket y mira quién entiende más del juego.",
+    "winnersNote": "Los ganadores se anunciarán el 20 de julio de 2026 por el correo registrado.",
+    "anotherHint": "Para crear una predicción nueva se generará otro ID de entrada al enviar.",
+    "anotherCta": "Hacer otra predicción",
+    "shareText": "Mi bracket del Mundial 2026 está listo en 2026 BRACKET. Entrada {entryId}. {origin}",
+    "instagramAlert": "Copia una captura o el enlace de tu bracket y compártelo desde la app de Instagram."
+  }
+}
