@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useMemo } from "react";
+import { useLayoutEffect, useMemo, useRef } from "react";
 import { GROUPS } from "@/data/worldCup2026";
 import {
   buildFinalMatch,
@@ -83,6 +83,15 @@ export function BracketDashboard() {
 
   const phaseTitle = t(`phase.${phase}`);
   const nextLabel = phase === "third" ? "" : t(`next.${phase}`);
+
+  const skipScrollToTopRef = useRef(true);
+  useLayoutEffect(() => {
+    if (skipScrollToTopRef.current) {
+      skipScrollToTopRef.current = false;
+      return;
+    }
+    window.scrollTo({ behavior: "auto", left: 0, top: 0 });
+  }, [phase]);
 
   return (
     <div className="flex min-h-screen flex-col bg-surface font-body text-on-surface">
