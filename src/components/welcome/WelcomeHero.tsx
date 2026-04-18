@@ -47,6 +47,74 @@ function frameUrl(index: number): string {
   return `${FRAME_BASE}/${String(n).padStart(3, "0")}.png`;
 }
 
+/** Carga paralela acotada para no saturar conexiones HTTP del navegador. */
+const WELCOME_FRAME_PRELOAD_CONCURRENCY = 8;
+
+function loadFrameIntoCache(
+  cache: Map<number, HTMLImageElement>,
+  index: number,
+): Promise<void> {
+  const clamped = Math.min(
+    WELCOME_FRAME_COUNT,
+    Math.max(1, Math.round(index)),
+  );
+  let img = cache.get(clamped);
+  if (!img) {
+    img = new Image();
+    img.decoding = "async";
+    cache.set(clamped, img);
+  }
+  /* Sin datos útiles, muchos navegadores dan complete===true y naturalWidth===0;
+   * salir solo con complete rompía la precarga (nunca se asignaba src). */
+  if (img.complete && img.naturalWidth > 0) {
+    return Promise.resolve();
+  }
+  if (img.src && img.complete) {
+    return Promise.resolve();
+  }
+
+  return new Promise((resolve) => {
+    let settled = false;
+    const finish = () => {
+      if (settled) {
+        return;
+      }
+      settled = true;
+      img.removeEventListener("load", finish);
+      img.removeEventListener("error", finish);
+      if (typeof img.decode === "function") {
+        void img.decode().catch(() => {
+          /* decode opcional; el bitmap ya está tras load */
+        });
+      }
+      resolve();
+    };
+    img.addEventListener("load", finish, { once: true });
+    img.addEventListener("error", finish, { once: true });
+    const url = frameUrl(clamped);
+    if (!img.src) {
+      img.src = url;
+    }
+    if (img.complete && img.naturalWidth > 0) {
+      finish();
+    }
+  });
+}
+
+async function preloadAllWelcomeFrames(
+  cache: Map<number, HTMLImageElement>,
+  shouldAbort: () => boolean,
+): Promise<void> {
+  const indices = Array.from({ length: WELCOME_FRAME_COUNT }, (_, i) => i + 1);
+  for (let i = 0; i < indices.length; i += WELCOME_FRAME_PRELOAD_CONCURRENCY) {
+    if (shouldAbort()) {
+      return;
+    }
+    const slice = indices.slice(i, i + WELCOME_FRAME_PRELOAD_CONCURRENCY);
+    await Promise.all(slice.map((n) => loadFrameIntoCache(cache, n)));
+  }
+}
+
 const GRID_COLS = 10;
 const GRID_ROWS = 6;
 const PERF_COUNT = 6;
@@ -96,6 +164,28 @@ export function WelcomeHero() {
   }, []);
 
   useLayoutEffect(() => {
+    const cache = imageCacheRef.current;
+    let cancelled = false;
+    filmReadyNotified.current = false;
+
+    void (async () => {
+      await preloadAllWelcomeFrames(cache, () => cancelled);
+      if (cancelled || filmReadyNotified.current) {
+        return;
+      }
+      filmReadyNotified.current = true;
+      setFilmReady(true);
+      requestAnimationFrame(() => {
+        ScrollTrigger.refresh();
+      });
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useLayoutEffect(() => {
     const canvas = canvasRef.current;
     const wrap = filmWrapRef.current;
     if (!canvas || !wrap) {
@@ -120,6 +210,8 @@ export function WelcomeHero() {
         img.decoding = "async";
         img.src = frameUrl(clamped);
         cache.set(clamped, img);
+      } else if (!img.src) {
+        img.src = frameUrl(clamped);
       }
       return img;
     };
@@ -133,16 +225,6 @@ export function WelcomeHero() {
       }
     };
 
-    const notifyFilmReady = () => {
-      if (!filmReadyNotified.current) {
-        filmReadyNotified.current = true;
-        setFilmReady(true);
-        requestAnimationFrame(() => {
-          ScrollTrigger.refresh();
-        });
-      }
-    };
-
     const paint = (index: number) => {
       sizeCanvasToElement(canvas, wrap);
       const img = ensureImage(index);
@@ -150,7 +232,6 @@ export function WelcomeHero() {
 
       const draw = () => {
         drawImageCover(ctx, canvas, img);
-        notifyFilmReady();
       };
 
       if (img.complete && img.naturalWidth > 0) {
@@ -207,6 +288,7 @@ export function WelcomeHero() {
 
       if (reduce) {
         setFrame(WELCOME_FRAME_COUNT);
+        filmReadyNotified.current = true;
         setFilmReady(true);
         if (frameScale) {
           gsap.set(frameScale, { scale: 1 });
