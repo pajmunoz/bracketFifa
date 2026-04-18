@@ -3,13 +3,7 @@
 import { useTranslations } from "next-intl";
 import { useLayoutEffect } from "react";
 import type { GroupDef } from "@/types/bracket";
-import {
-  HOST_TEAM_ID_BY_GROUP,
-  isValidGroupOrder,
-  normalizeHostGroupOrder,
-  sanitizeGroupOrder,
-  TEAMS,
-} from "@/data/worldCup2026";
+import { isValidGroupOrder, sanitizeGroupOrder, TEAMS } from "@/data/worldCup2026";
 import { useBracket } from "@/context/BracketContext";
 import { TeamPickButton } from "@/components/TeamPickButton";
 import { buildGroupOrderFromPicks } from "@/lib/groupOrder";
@@ -21,29 +15,21 @@ type Props = {
 export function GroupPanel({ group }: Props) {
   const t = useTranslations("GroupPanel");
   const { groupOrders, setTeamOrder } = useBracket();
-  const hostId = HOST_TEAM_ID_BY_GROUP[group.id];
-  const hostTeam = hostId ? TEAMS[hostId] : undefined;
   const rawOrder = groupOrders[group.id] ?? group.teamIds;
-  const order = sanitizeGroupOrder(group.id, rawOrder, group.teamIds);
+  const order = sanitizeGroupOrder(rawOrder, group.teamIds);
 
   useLayoutEffect(() => {
     const raw = groupOrders[group.id];
     if (!raw || isValidGroupOrder(raw, group.teamIds)) {
       return;
     }
-    setTeamOrder(
-      group.id,
-      normalizeHostGroupOrder(group.id, [...group.teamIds]),
-    );
+    setTeamOrder(group.id, [...group.teamIds]);
   }, [group.id, group.teamIds, groupOrders, setTeamOrder]);
 
   const firstId = order[0] ?? "";
   const secondId = order[1] ?? "";
 
   function pickFirst(tid: string) {
-    if (hostId) {
-      return;
-    }
     if (tid === firstId) {
       return;
     }
@@ -89,36 +75,27 @@ export function GroupPanel({ group }: Props) {
       <div className="space-y-6">
         <div>
           <p className="font-label mb-3 text-xs font-bold tracking-widest text-on-surface-variant uppercase">
-            {hostId ? t("hostFirstTitle") : t("firstPlace")}
+            {t("firstPlace")}
           </p>
-          {hostId && hostTeam ? (
-            <TeamPickButton
-              badge={t("hostBadge")}
-              disabled
-              selected
-              team={hostTeam}
-              onClick={() => {}}
-            />
-          ) : !hostId ? (
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              {group.teamIds.map((tid) => {
-                const team = TEAMS[tid];
-                if (!team) {
-                  return null;
-                }
-                return (
-                  <TeamPickButton
-                    key={`${group.id}-1-${tid}`}
-                    selected={tid === firstId}
-                    team={team}
-                    onClick={() => {
-                      pickFirst(tid);
-                    }}
-                  />
-                );
-              })}
-            </div>
-          ) : null}
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            {group.teamIds.map((tid) => {
+              const team = TEAMS[tid];
+              if (!team) {
+                return null;
+              }
+              return (
+                <TeamPickButton
+                  key={`${group.id}-1-${tid}`}
+                  badge={team.host ? t("hostBadge") : undefined}
+                  selected={tid === firstId}
+                  team={team}
+                  onClick={() => {
+                    pickFirst(tid);
+                  }}
+                />
+              );
+            })}
+          </div>
         </div>
         <div>
           <p className="font-label mb-3 text-xs font-bold tracking-widest text-on-surface-variant uppercase">
@@ -133,6 +110,7 @@ export function GroupPanel({ group }: Props) {
               return (
                 <TeamPickButton
                   key={`${group.id}-2-${tid}`}
+                  badge={team.host ? t("hostBadge") : undefined}
                   selected={tid === secondId}
                   team={team}
                   onClick={() => {

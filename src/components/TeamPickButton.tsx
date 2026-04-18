@@ -1,8 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import { useMemo } from "react";
-import { getTeamTooltipText } from "@/data/teamTooltipsData";
+import { useLocale } from "next-intl";
+import { teamDisplayName } from "@/lib/teamDisplayName";
 import type { Team } from "@/types/bracket";
 
 type Props = {
@@ -22,18 +22,18 @@ export function TeamPickButton({
   selected,
   team,
 }: Props) {
+  const locale = useLocale();
+  const label = teamDisplayName(team, locale);
   const base =
     selected
       ? "flex items-center gap-3 rounded-xl border-2 border-primary bg-primary/10 p-4 text-left transition-all"
       : "flex items-center gap-3 rounded-xl border border-outline-variant/20 bg-surface-container-low p-4 text-left transition-all hover:border-primary/40";
   const state = disabled ? `${base} opacity-90` : base;
-  const title = useMemo(() => getTeamTooltipText(team), [team]);
   return (
     <button
       className={`${state} ${className}`.trim()}
       disabled={disabled}
       onClick={disabled ? () => {} : onClick}
-      title={title}
       type="button"
     >
       <Image
@@ -45,7 +45,7 @@ export function TeamPickButton({
       />
       <span className="font-headline shrink-0 font-bold">{team.code}</span>
       <span className="font-label flex min-w-0 flex-1 flex-col items-start gap-1 truncate text-left text-sm text-on-surface-variant">
-        <span className="min-w-0 truncate">{team.name}</span>
+        <span className="min-w-0 truncate">{label}</span>
         {badge ? (
           <span className="font-label shrink-0 rounded bg-primary/15 px-2 py-0.5 text-[0.65rem] font-bold tracking-wide text-primary uppercase">
             {badge}

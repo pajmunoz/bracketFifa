@@ -99,8 +99,7 @@
   },
   "GroupPanel": {
     "badge": "Pick 1st & 2nd",
-    "hostBadge": "Host — auto-qualified",
-    "hostFirstTitle": "1st place (host)",
+    "hostBadge": "Co-host — already in World Cup 2026",
     "firstPlace": "1st place",
     "secondPlace": "2nd place",
     "restTitle": "3rd & 4th (fixture order)"

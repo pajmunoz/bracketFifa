@@ -1,4 +1,5 @@
 import { GROUPS, TEAMS } from "@/data/worldCup2026";
+import { teamDisplayName } from "@/lib/teamDisplayName";
 import {
   buildFinalMatch,
   buildQFMatches,
@@ -184,7 +185,7 @@ export function EntryOgImage({
               textTransform: "uppercase",
             }}
           >
-            {champion.name}
+            {teamDisplayName(champion, locale)}
           </div>
           {third ? (
             <div

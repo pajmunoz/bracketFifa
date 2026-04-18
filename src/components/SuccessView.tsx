@@ -10,6 +10,7 @@ import {
   useState,
 } from "react";
 import { TEAMS } from "@/data/worldCup2026";
+import { teamDisplayName } from "@/lib/teamDisplayName";
 import { buildSFMatches } from "@/lib/bracketKnockout";
 import { SUCCESS_BALL_TEXTURE, SUCCESS_STADIUM_BG } from "@/data/successAssets";
 import { BracketShareCard } from "@/components/bracket-share/BracketShareCard";
@@ -169,6 +170,7 @@ export function SuccessView() {
     TEAMS.t01;
   const thirdTeam = TEAMS[k.thirdPlaceId];
   const sfMatches = buildSFMatches(k.qf);
+  const winnerLabel = teamDisplayName(winnerTeam, locale);
 
   return (
     <div className="flex min-h-screen flex-col bg-surface font-body text-on-surface antialiased">
@@ -234,7 +236,7 @@ export function SuccessView() {
               </span>
               <div className="mb-4 rounded-full border-4 border-on-primary p-2">
                 <Image
-                  alt={winnerTeam.name}
+                  alt={winnerLabel}
                   className="h-24 w-24 rounded-full object-cover"
                   height={96}
                   src={winnerTeam.flagUrl}
@@ -242,7 +244,7 @@ export function SuccessView() {
                 />
               </div>
               <h3 className="font-headline text-3xl font-black tracking-tight italic">
-                {winnerTeam.name.toUpperCase()}
+                {winnerLabel.toUpperCase()}
               </h3>
               {thirdTeam ? (
                 <p className="font-label mt-4 rounded-full bg-black/20 px-4 py-1 text-sm font-bold">
@@ -263,6 +265,8 @@ export function SuccessView() {
                     if (!home || !away || !win) {
                       return null;
                     }
+                    const homeLabel = teamDisplayName(home, locale);
+                    const awayLabel = teamDisplayName(away, locale);
                     return (
                       <div
                         key={m.id}
@@ -275,7 +279,7 @@ export function SuccessView() {
                           <div className="flex items-center gap-3">
                             <div className="h-8 w-8 overflow-hidden rounded-lg border border-outline-variant/30 bg-surface-container">
                               <Image
-                                alt={home.name}
+                                alt={homeLabel}
                                 className="h-full w-full object-cover"
                                 height={32}
                                 src={home.flagUrl}
@@ -307,7 +311,7 @@ export function SuccessView() {
                             </span>
                             <div className="h-8 w-8 overflow-hidden rounded-lg border border-outline-variant/30 bg-surface-container">
                               <Image
-                                alt={away.name}
+                                alt={awayLabel}
                                 className="h-full w-full object-cover"
                                 height={32}
                                 src={away.flagUrl}

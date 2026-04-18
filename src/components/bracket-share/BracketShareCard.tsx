@@ -1,7 +1,7 @@
 "use client";
 
 import { forwardRef } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { GROUPS, TEAMS } from "@/data/worldCup2026";
 import {
   buildFinalMatch,
@@ -10,6 +10,7 @@ import {
   buildR32Fixtures,
   buildSFMatches,
 } from "@/lib/bracketKnockout";
+import { teamDisplayName } from "@/lib/teamDisplayName";
 import type { BracketSubmission } from "@/types/bracket";
 import styles from "@/components/bracket-share/BracketShareCard.module.css";
 
@@ -39,6 +40,7 @@ function ShareFlag({
 
 export const BracketShareCard = forwardRef<HTMLDivElement, BracketShareCardProps>(
   function BracketShareCard({ data }, ref) {
+    const locale = useLocale();
     const t = useTranslations("Success");
     const k = data.knockout;
     const r32Fixtures = buildR32Fixtures(data.groups);
@@ -87,7 +89,9 @@ export const BracketShareCard = forwardRef<HTMLDivElement, BracketShareCardProps
               className={styles.championFlag}
               team={champion}
             />
-            <p className={styles.championName}>{champion.name}</p>
+            <p className={styles.championName}>
+              {teamDisplayName(champion, locale)}
+            </p>
             {third ? (
               <p className={styles.thirdLine}>{t("thirdPlace", { code: third.code })}</p>
             ) : null}

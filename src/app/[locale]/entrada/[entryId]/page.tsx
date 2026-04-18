@@ -6,6 +6,7 @@ import { EntryPublicView } from "@/components/entry-public/EntryPublicView";
 import { routing } from "@/i18n/routing";
 import { entryOgApiPath } from "@/lib/entrySharePath";
 import { getSubmissionByEntryId } from "@/lib/getSubmissionByEntryId";
+import { submissionChampionDisplayName } from "@/lib/teamDisplayName";
 import { siteBaseUrl } from "@/lib/siteBaseUrl";
 
 export const dynamic = "force-dynamic";
@@ -29,7 +30,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const t = await getTranslations({ locale, namespace: "EntryMetadata" });
   const title = t("title", { id: submission.entryId });
   const description = t("description", {
-    winner: submission.predictedWinnerName,
+    winner: submissionChampionDisplayName(submission, locale),
   });
   const base = siteBaseUrl().replace(/\/$/, "");
   const ogPath = entryOgApiPath(submission.entryId, locale);

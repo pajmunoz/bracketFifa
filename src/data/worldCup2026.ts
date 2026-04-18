@@ -1,7 +1,9 @@
 import type { GroupDef, Team } from "@/types/bracket";
-import { buildGroupOrderFromPicks } from "@/lib/groupOrder";
 
-/** Anfitriones 2026: 1.º fijo en su grupo (México A, Canadá B, EE. UU. D). */
+/**
+ * Coanfitriones 2026 (México A, Canadá B, EE. UU. D): `team.host` y sede FIFA.
+ * Clasifican al Mundial; el 1.º–4.º del grupo lo elige el usuario como en el resto.
+ */
 export const HOST_TEAM_ID_BY_GROUP: Partial<Record<string, string>> = {
   A: "t01",
   B: "t05",
@@ -44,7 +46,7 @@ const TEAM_ROWS: readonly [string, string, string, string][] = [
   ["NZL", "New Zealand", "Nueva Zelanda", "nz"],
   ["ESP", "Spain", "España", "es"],
   ["CPV", "Cabo Verde", "Cabo Verde", "cv"],
-  ["KSA", "Saudi Arabia", "Arabia Saudita", "sa"],
+  ["KSA", "Saudi Arabia", "Arabia Saudí", "sa"],
   ["URU", "Uruguay", "Uruguay", "uy"],
   ["FRA", "France", "Francia", "fr"],
   ["SEN", "Senegal", "Senegal", "sn"],
@@ -55,7 +57,7 @@ const TEAM_ROWS: readonly [string, string, string, string][] = [
   ["AUT", "Austria", "Austria", "at"],
   ["JOR", "Jordan", "Jordania", "jo"],
   ["POR", "Portugal", "Portugal", "pt"],
-  ["COD", "DR Congo", "R. D. Congo", "cd"],
+  ["COD", "DR Congo", "República Democrática del Congo", "cd"],
   ["UZB", "Uzbekistan", "Uzbekistán", "uz"],
   ["COL", "Colombia", "Colombia", "co"],
   ["ENG", "England", "Inglaterra", "gb-eng"],
@@ -120,48 +122,13 @@ export function isValidGroupOrder(
   return order.every((id) => baseSet.has(id));
 }
 
-/** Repara orden corrupto y aplica regla de anfitrión. */
+/** Repara orden corrupto (p. ej. datos viejos en localStorage). */
 export function sanitizeGroupOrder(
-  groupId: string,
   order: readonly string[] | undefined,
   base: readonly string[],
 ): string[] {
   if (!isValidGroupOrder(order, base)) {
-    return normalizeHostGroupOrder(groupId, [...base]);
+    return [...base];
   }
-  return normalizeHostGroupOrder(groupId, order ?? [...base]);
-}
-
-/** Garantiza anfitrión en 1.º si el estado quedara incoherente (p. ej. datos viejos). */
-export function normalizeHostGroupOrder(
-  groupId: string,
-  teamIds: readonly string[],
-): string[] {
-  const hostId = HOST_TEAM_ID_BY_GROUP[groupId];
-  if (!hostId) {
-    return [...teamIds];
-  }
-  const g = GROUPS.find((gr) => gr.id === groupId);
-  if (!g) {
-    return [...teamIds];
-  }
-  if (teamIds[0] === hostId) {
-    const set = new Set(teamIds);
-    if (teamIds.length === g.teamIds.length && g.teamIds.every((id) => set.has(id))) {
-      return [...teamIds];
-    }
-    const second = teamIds[1] ?? g.teamIds.find((id) => id !== hostId) ?? "";
-    return buildGroupOrderFromPicks(g.teamIds, hostId, second);
-  }
-  const oldFirst = teamIds[0] ?? "";
-  let secondPick =
-    oldFirst && oldFirst !== hostId
-      ? oldFirst
-      : (teamIds.find((id, i) => i > 0 && id !== hostId) ??
-        g.teamIds.find((id) => id !== hostId) ??
-        "");
-  if (!secondPick) {
-    secondPick = g.teamIds.find((id) => id !== hostId) ?? "";
-  }
-  return buildGroupOrderFromPicks(g.teamIds, hostId, secondPick);
+  return [...(order ?? base)];
 }

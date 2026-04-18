@@ -8,7 +8,9 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { useLocale } from "next-intl";
 import { GROUPS, sanitizeGroupOrder, TEAMS } from "@/data/worldCup2026";
+import { teamDisplayName } from "@/lib/teamDisplayName";
 import { R32_IDS } from "@/lib/bracketKnockout";
 import type {
   BracketPhase,
@@ -36,7 +38,7 @@ const SF_IDS = ["sf-0", "sf-1"] as const;
 function initialOrders(): GroupOrders {
   const o: GroupOrders = {};
   for (const g of GROUPS) {
-    o[g.id] = sanitizeGroupOrder(g.id, [...g.teamIds], g.teamIds);
+    o[g.id] = sanitizeGroupOrder([...g.teamIds], g.teamIds);
   }
   return o;
 }
@@ -128,6 +130,7 @@ const PHASE_ORDER: BracketPhase[] = [
 const SNAPSHOT_GROUP_ORDERS: GroupOrders = initialOrders();
 
 export function BracketProvider({ children }: { children: ReactNode }) {
+  const locale = useLocale();
   const [phase, setPhase] = useState<BracketPhase>("groups");
   const [groupOrders, setGroupOrders] = useState<GroupOrders>(() => ({
     ...SNAPSHOT_GROUP_ORDERS,
@@ -155,7 +158,7 @@ export function BracketProvider({ children }: { children: ReactNode }) {
   const setTeamOrder = useCallback((groupId: string, teamIds: string[]) => {
     const g = GROUPS.find((gr) => gr.id === groupId);
     const base = g?.teamIds ?? teamIds;
-    const normalized = sanitizeGroupOrder(groupId, teamIds, base);
+    const normalized = sanitizeGroupOrder(teamIds, base);
     setGroupOrders((prev) => ({ ...prev, [groupId]: normalized }));
   }, []);
 
@@ -366,11 +369,11 @@ export function BracketProvider({ children }: { children: ReactNode }) {
       knockout: knockoutForPayload,
       name: form.name.trim(),
       predictedWinnerCode: champ?.code ?? "",
-      predictedWinnerName: champ?.name ?? "",
+      predictedWinnerName: champ ? teamDisplayName(champ, locale) : "",
       submittedAt: new Date().toISOString(),
       whatsapp: form.whatsapp.trim(),
     };
-  }, [championId, form, groupOrders, knockoutForPayload]);
+  }, [championId, form, groupOrders, knockoutForPayload, locale]);
 
   const submitPrediction = useCallback((): BracketSubmission => {
     const payload = prepareSubmission();
