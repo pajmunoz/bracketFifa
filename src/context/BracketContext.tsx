@@ -8,7 +8,8 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { GROUPS, TEAMS } from "@/data/worldCup2026";
+import { GROUPS, normalizeHostGroupOrder, TEAMS } from "@/data/worldCup2026";
+import { R32_IDS } from "@/lib/bracketKnockout";
 import type {
   BracketPhase,
   BracketSubmission,
@@ -35,7 +36,7 @@ const SF_IDS = ["sf-0", "sf-1"] as const;
 function initialOrders(): GroupOrders {
   const o: GroupOrders = {};
   for (const g of GROUPS) {
-    o[g.id] = [...g.teamIds];
+    o[g.id] = normalizeHostGroupOrder(g.id, [...g.teamIds]);
   }
   return o;
 }
@@ -43,6 +44,10 @@ function initialOrders(): GroupOrders {
 function randomEntryId(): string {
   const n = Math.floor(1000 + Math.random() * 9000);
   return `2026-WK-${n}`;
+}
+
+function emptyR32(): Record<string, string> {
+  return Object.fromEntries(R32_IDS.map((id) => [id, ""]));
 }
 
 function emptyR16(): Record<string, string> {
@@ -68,12 +73,13 @@ function countFilledWinners(
  * Progreso solo del bracket (sin formulario). Misma proporción que antes entre
  * fases; escala a 100 al elegir tercer lugar.
  */
-const W_GROUPS = (100 * 10) / 80;
-const W_R16 = (100 * 20) / 80;
-const W_QF = (100 * 15) / 80;
-const W_SF = (100 * 10) / 80;
-const W_FINAL = (100 * 12) / 80;
-const W_THIRD = (100 * 13) / 80;
+const W_GROUPS = (100 * 10) / 100;
+const W_R32 = (100 * 20) / 100;
+const W_R16 = (100 * 20) / 100;
+const W_QF = (100 * 15) / 100;
+const W_SF = (100 * 10) / 100;
+const W_FINAL = (100 * 12) / 100;
+const W_THIRD = (100 * 13) / 100;
 
 type BracketContextValue = {
   advancePhase: () => void;
@@ -89,11 +95,13 @@ type BracketContextValue = {
   progressPercent: number;
   qfWinners: Record<string, string>;
   r16Winners: Record<string, string>;
+  r32Winners: Record<string, string>;
   registrationUnlocked: boolean;
   setChampion: (teamId: string) => void;
   setForm: (patch: Partial<RegistrationForm>) => void;
   setQfWinner: (matchId: string, teamId: string) => void;
   setR16Winner: (matchId: string, teamId: string) => void;
+  setR32Winner: (matchId: string, teamId: string) => void;
   setSfWinner: (matchId: string, teamId: string) => void;
   setTeamOrder: (groupId: string, teamIds: string[]) => void;
   setThirdPlace: (teamId: string) => void;
@@ -108,6 +116,7 @@ const BracketContext = createContext<BracketContextValue | null>(null);
 
 const PHASE_ORDER: BracketPhase[] = [
   "groups",
+  "r32",
   "r16",
   "qf",
   "sf",
@@ -123,6 +132,9 @@ export function BracketProvider({ children }: { children: ReactNode }) {
   const [groupOrders, setGroupOrders] = useState<GroupOrders>(() => ({
     ...SNAPSHOT_GROUP_ORDERS,
   }));
+  const [r32Winners, setR32Winners] = useState<Record<string, string>>(
+    emptyR32,
+  );
   const [r16Winners, setR16Winners] = useState<Record<string, string>>(
     emptyR16,
   );
@@ -141,11 +153,16 @@ export function BracketProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const setTeamOrder = useCallback((groupId: string, teamIds: string[]) => {
-    setGroupOrders((prev) => ({ ...prev, [groupId]: teamIds }));
+    const normalized = normalizeHostGroupOrder(groupId, teamIds);
+    setGroupOrders((prev) => ({ ...prev, [groupId]: normalized }));
   }, []);
 
   const setR16Winner = useCallback((matchId: string, teamId: string) => {
     setR16Winners((prev) => ({ ...prev, [matchId]: teamId }));
+  }, []);
+
+  const setR32Winner = useCallback((matchId: string, teamId: string) => {
+    setR32Winners((prev) => ({ ...prev, [matchId]: teamId }));
   }, []);
 
   const setQfWinner = useCallback((matchId: string, teamId: string) => {
@@ -163,6 +180,11 @@ export function BracketProvider({ children }: { children: ReactNode }) {
   const setThirdPlace = useCallback((teamId: string) => {
     setThirdPlaceId(teamId);
   }, []);
+
+  const r32Complete = useMemo(
+    () => R32_IDS.every((id) => (r32Winners[id] ?? "").length > 0),
+    [r32Winners],
+  );
 
   const r16Complete = useMemo(
     () => R16_IDS.every((id) => (r16Winners[id] ?? "").length > 0),
@@ -193,6 +215,9 @@ export function BracketProvider({ children }: { children: ReactNode }) {
     if (phase === "groups") {
       return true;
     }
+    if (phase === "r32") {
+      return r32Complete;
+    }
     if (phase === "r16") {
       return r16Complete;
     }
@@ -212,6 +237,7 @@ export function BracketProvider({ children }: { children: ReactNode }) {
   }, [
     phase,
     r16Complete,
+    r32Complete,
     qfComplete,
     sfComplete,
     finalComplete,
@@ -253,30 +279,36 @@ export function BracketProvider({ children }: { children: ReactNode }) {
     }
 
     if (idx === 1) {
-      p += (countFilledWinners(R16_IDS, r16Winners) / R16_IDS.length) * W_R16;
+      p += (countFilledWinners(R32_IDS, r32Winners) / R32_IDS.length) * W_R32;
     } else if (idx > 1) {
-      p += W_R16;
+      p += W_R32;
     }
 
     if (idx === 2) {
-      p += (countFilledWinners(QF_IDS, qfWinners) / QF_IDS.length) * W_QF;
+      p += (countFilledWinners(R16_IDS, r16Winners) / R16_IDS.length) * W_R16;
     } else if (idx > 2) {
-      p += W_QF;
+      p += W_R16;
     }
 
     if (idx === 3) {
-      p += (countFilledWinners(SF_IDS, sfWinners) / SF_IDS.length) * W_SF;
+      p += (countFilledWinners(QF_IDS, qfWinners) / QF_IDS.length) * W_QF;
     } else if (idx > 3) {
-      p += W_SF;
+      p += W_QF;
     }
 
     if (idx === 4) {
-      p += finalComplete ? W_FINAL : 0;
+      p += (countFilledWinners(SF_IDS, sfWinners) / SF_IDS.length) * W_SF;
     } else if (idx > 4) {
-      p += W_FINAL;
+      p += W_SF;
     }
 
     if (idx === 5) {
+      p += finalComplete ? W_FINAL : 0;
+    } else if (idx > 5) {
+      p += W_FINAL;
+    }
+
+    if (idx === 6) {
       p += thirdComplete ? W_THIRD : 0;
     }
 
@@ -287,6 +319,7 @@ export function BracketProvider({ children }: { children: ReactNode }) {
     phaseIndex,
     qfWinners,
     r16Winners,
+    r32Winners,
     sfWinners,
     thirdComplete,
   ]);
@@ -296,6 +329,10 @@ export function BracketProvider({ children }: { children: ReactNode }) {
   const bracketComplete = registrationUnlocked;
 
   const knockoutForPayload = useMemo((): KnockoutData => {
+    const r32: Record<string, string> = {};
+    for (const id of R32_IDS) {
+      r32[id] = r32Winners[id] ?? "";
+    }
     const r16: Record<string, string> = {};
     for (const id of R16_IDS) {
       r16[id] = r16Winners[id] ?? "";
@@ -312,10 +349,11 @@ export function BracketProvider({ children }: { children: ReactNode }) {
       championId: championId ?? "",
       qf,
       r16,
+      r32,
       sf,
       thirdPlaceId: thirdPlaceId ?? "",
     };
-  }, [championId, qfWinners, r16Winners, sfWinners, thirdPlaceId]);
+  }, [championId, qfWinners, r16Winners, r32Winners, sfWinners, thirdPlaceId]);
 
   const prepareSubmission = useCallback((): BracketSubmission => {
     const champ = championId ? TEAMS[championId] : null;
@@ -365,11 +403,13 @@ export function BracketProvider({ children }: { children: ReactNode }) {
       progressPercent,
       qfWinners,
       r16Winners,
+      r32Winners,
       registrationUnlocked,
       setChampion,
       setForm,
       setQfWinner,
       setR16Winner,
+      setR32Winner,
       setSfWinner,
       setTeamOrder,
       setThirdPlace,
@@ -393,11 +433,13 @@ export function BracketProvider({ children }: { children: ReactNode }) {
       progressPercent,
       qfWinners,
       r16Winners,
+      r32Winners,
       registrationUnlocked,
       setChampion,
       setForm,
       setQfWinner,
       setR16Winner,
+      setR32Winner,
       setSfWinner,
       setTeamOrder,
       setThirdPlace,

@@ -2,7 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import type { GroupDef } from "@/types/bracket";
-import { TEAMS } from "@/data/worldCup2026";
+import { HOST_TEAM_ID_BY_GROUP, TEAMS } from "@/data/worldCup2026";
 import { useBracket } from "@/context/BracketContext";
 import { TeamPickButton } from "@/components/TeamPickButton";
 import { buildGroupOrderFromPicks } from "@/lib/groupOrder";
@@ -14,11 +14,16 @@ type Props = {
 export function GroupPanel({ group }: Props) {
   const t = useTranslations("GroupPanel");
   const { groupOrders, setTeamOrder } = useBracket();
+  const hostId = HOST_TEAM_ID_BY_GROUP[group.id];
+  const hostTeam = hostId ? TEAMS[hostId] : undefined;
   const order = groupOrders[group.id] ?? group.teamIds;
   const firstId = order[0] ?? "";
   const secondId = order[1] ?? "";
 
   function pickFirst(tid: string) {
+    if (hostId) {
+      return;
+    }
     if (tid === firstId) {
       return;
     }
@@ -58,32 +63,39 @@ export function GroupPanel({ group }: Props) {
           {t("badge")}
         </span>
       </div>
-      <p className="font-label mb-6 text-xs text-on-surface-variant">
-        {t("intro")}
-      </p>
       <div className="space-y-6">
         <div>
           <p className="font-label mb-3 text-xs font-bold tracking-widest text-on-surface-variant uppercase">
-            {t("firstPlace")}
+            {hostId ? t("hostFirstTitle") : t("firstPlace")}
           </p>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            {group.teamIds.map((tid) => {
-              const team = TEAMS[tid];
-              if (!team) {
-                return null;
-              }
-              return (
-                <TeamPickButton
-                  key={tid}
-                  selected={tid === firstId}
-                  team={team}
-                  onClick={() => {
-                    pickFirst(tid);
-                  }}
-                />
-              );
-            })}
-          </div>
+          {hostId && hostTeam ? (
+            <TeamPickButton
+              badge={t("hostBadge")}
+              disabled
+              selected
+              team={hostTeam}
+              onClick={() => {}}
+            />
+          ) : !hostId ? (
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              {group.teamIds.map((tid) => {
+                const team = TEAMS[tid];
+                if (!team) {
+                  return null;
+                }
+                return (
+                  <TeamPickButton
+                    key={tid}
+                    selected={tid === firstId}
+                    team={team}
+                    onClick={() => {
+                      pickFirst(tid);
+                    }}
+                  />
+                );
+              })}
+            </div>
+          ) : null}
         </div>
         <div>
           <p className="font-label mb-3 text-xs font-bold tracking-widest text-on-surface-variant uppercase">

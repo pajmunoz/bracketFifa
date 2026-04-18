@@ -62,20 +62,23 @@
       "groups": "Group stage",
       "qf": "Quarter-finals",
       "r16": "Round of 16",
+      "r32": "Round of 32",
       "sf": "Semi-finals",
       "third": "Third place"
     },
     "next": {
       "final": "Next: third place",
-      "groups": "Next: round of 16",
+      "groups": "Next: round of 32",
       "qf": "Next: semi-finals",
       "r16": "Next: quarter-finals",
+      "r32": "Next: round of 16",
       "sf": "Next: final",
       "third": ""
     },
     "progressLabel": "Bracket progress",
     "knockout": {
       "r16": "Round of 16 — pick the winner of each match",
+      "r32": "Round of 32 — pick the winner of each match",
       "qf": "Quarter-finals",
       "sf": "Semi-finals",
       "final": "Final",
@@ -86,6 +89,7 @@
     "bracketCompleteStrong": "Submit prediction",
     "bracketCompleteLine2": "to save and view your summary.",
     "hintR16": "Pick a winner in all 8 matches to continue.",
+    "hintR32": "Pick a winner in all 16 matches to continue.",
     "hintQf": "Pick a winner in all 4 matches.",
     "hintSf": "Pick a winner in both semi-finals.",
     "hintFinal": "Pick the champion.",
@@ -95,7 +99,8 @@
   },
   "GroupPanel": {
     "badge": "Pick 1st & 2nd",
-    "intro": "Only first and second in the group count for the round of 16; the rest is informational.",
+    "hostBadge": "Host — auto-qualified",
+    "hostFirstTitle": "1st place (host)",
     "firstPlace": "1st place",
     "secondPlace": "2nd place",
     "restTitle": "3rd & 4th (fixture order)"
@@ -155,6 +160,7 @@
     "sharePhaseFinal": "Final",
     "sharePhaseQf": "Quarter-finals",
     "sharePhaseR16": "Round of 16",
+    "sharePhaseR32": "Round of 32",
     "sharePhaseSf": "Semi-finals",
     "shareVs": "vs",
     "subtitle": "Your prediction has been registered for the 2026 World Cup Final prize draw.",

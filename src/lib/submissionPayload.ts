@@ -2,9 +2,11 @@ import { GROUPS, TEAMS } from "@/data/worldCup2026";
 import {
   buildFinalMatch,
   buildQFMatches,
-  buildR16Fixtures,
+  buildR16FromR32Results,
+  buildR32Fixtures,
   buildSFMatches,
   buildThirdPlaceMatch,
+  R32_IDS,
 } from "@/lib/bracketKnockout";
 import type { BracketSubmission, KnockoutData } from "@/types/bracket";
 
@@ -29,18 +31,23 @@ function parseKnockout(raw: unknown): KnockoutData | null {
   if (!isRecord(raw)) {
     return null;
   }
+  const r32In = raw.r32;
   const r16In = raw.r16;
   const qfIn = raw.qf;
   const sfIn = raw.sf;
   const championId = raw.championId;
   const thirdPlaceId = raw.thirdPlaceId;
   if (
+    !isRecord(r32In) ||
     !isRecord(r16In) ||
     !isRecord(qfIn) ||
     !isRecord(sfIn) ||
     typeof championId !== "string" ||
     typeof thirdPlaceId !== "string"
   ) {
+    return null;
+  }
+  if (Object.keys(r32In).length !== R32_IDS.length) {
     return null;
   }
   if (Object.keys(r16In).length !== R16_IDS.length) {
@@ -51,6 +58,15 @@ function parseKnockout(raw: unknown): KnockoutData | null {
   }
   if (Object.keys(sfIn).length !== SF_IDS.length) {
     return null;
+  }
+
+  const r32: Record<string, string> = {};
+  for (const id of R32_IDS) {
+    const v = r32In[id];
+    if (typeof v !== "string" || !v) {
+      return null;
+    }
+    r32[id] = v;
   }
 
   const r16: Record<string, string> = {};
@@ -81,6 +97,7 @@ function parseKnockout(raw: unknown): KnockoutData | null {
     championId: championId.trim(),
     qf,
     r16,
+    r32,
     sf,
     thirdPlaceId: thirdPlaceId.trim(),
   };
@@ -113,7 +130,14 @@ function validateKnockoutCoherence(
   groups: Record<string, string[]>,
   k: KnockoutData,
 ): boolean {
-  const r16 = buildR16Fixtures(groups);
+  const r32 = buildR32Fixtures(groups);
+  for (const m of r32) {
+    const w = k.r32[m.id];
+    if (w !== m.homeId && w !== m.awayId) {
+      return false;
+    }
+  }
+  const r16 = buildR16FromR32Results(k.r32);
   for (const m of r16) {
     const w = k.r16[m.id];
     if (w !== m.homeId && w !== m.awayId) {

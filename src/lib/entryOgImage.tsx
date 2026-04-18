@@ -2,7 +2,8 @@ import { GROUPS, TEAMS } from "@/data/worldCup2026";
 import {
   buildFinalMatch,
   buildQFMatches,
-  buildR16Fixtures,
+  buildR16FromR32Results,
+  buildR32Fixtures,
   buildSFMatches,
 } from "@/lib/bracketKnockout";
 import type { BracketSubmission } from "@/types/bracket";
@@ -50,7 +51,8 @@ export function EntryOgImage({
 }) {
   const L = copy[locale];
   const k = data.knockout;
-  const r16Fixtures = buildR16Fixtures(data.groups);
+  const r32Fixtures = buildR32Fixtures(data.groups);
+  const r16Fixtures = buildR16FromR32Results(k.r32);
   const qfMatches = buildQFMatches(k.r16);
   const sfMatches = buildSFMatches(k.qf);
   const finalMatch = buildFinalMatch(k.sf);
@@ -63,6 +65,9 @@ export function EntryOgImage({
   const homeFinal = TEAMS[finalMatch.homeId];
   const awayFinal = TEAMS[finalMatch.awayId];
 
+  const r32WinnerTeams = r32Fixtures
+    .map((m) => TEAMS[k.r32[m.id]])
+    .filter((team): team is NonNullable<typeof team> => Boolean(team));
   const r16WinnerTeams = r16Fixtures
     .map((m) => TEAMS[k.r16[m.id]])
     .filter((team): team is NonNullable<typeof team> => Boolean(team));
@@ -219,12 +224,29 @@ export function EntryOgImage({
             {L.knockout}
           </span>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-            {r16WinnerTeams.map((team) => (
+            {r32WinnerTeams.map((team, i) => (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                alt=""
+                height={36}
+                key={`${team.id}-r32-${i}`}
+                src={team.flagUrl}
+                style={{
+                  border: "2px solid rgba(16,185,129,0.55)",
+                  borderRadius: 8,
+                  objectFit: "cover",
+                }}
+                width={36}
+              />
+            ))}
+          </div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+            {r16WinnerTeams.map((team, i) => (
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 alt=""
                 height={40}
-                key={team.id}
+                key={`${team.id}-r16-${i}`}
                 src={team.flagUrl}
                 style={{
                   border: "2px solid rgba(16,185,129,0.55)",

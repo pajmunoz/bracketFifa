@@ -6,7 +6,8 @@ import { GROUPS } from "@/data/worldCup2026";
 import {
   buildFinalMatch,
   buildQFMatches,
-  buildR16Fixtures,
+  buildR16FromR32Results,
+  buildR32Fixtures,
   buildSFMatches,
   buildThirdPlaceMatch,
 } from "@/lib/bracketKnockout";
@@ -19,7 +20,7 @@ import { RegistrationSidebar } from "@/components/RegistrationSidebar";
 
 function GroupsPhase() {
   return (
-    <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+    <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
       {GROUPS.map((g) => (
         <GroupPanel key={g.id} group={g} />
       ))}
@@ -60,18 +61,24 @@ export function BracketDashboard() {
     progressPercent,
     qfWinners,
     r16Winners,
+    r32Winners,
     setChampion,
     setQfWinner,
     setR16Winner,
+    setR32Winner,
     setSfWinner,
     setThirdPlace,
     sfWinners,
     thirdPlaceId,
   } = useBracket();
 
-  const r16Matches = useMemo(
-    () => buildR16Fixtures(groupOrders),
+  const r32Matches = useMemo(
+    () => buildR32Fixtures(groupOrders),
     [groupOrders],
+  );
+  const r16Matches = useMemo(
+    () => buildR16FromR32Results(r32Winners),
+    [r32Winners],
   );
   const qfMatches = useMemo(() => buildQFMatches(r16Winners), [r16Winners]);
   const sfMatches = useMemo(() => buildSFMatches(qfWinners), [qfWinners]);
@@ -129,6 +136,14 @@ export function BracketDashboard() {
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
           <div className="space-y-10 lg:col-span-8">
             {phase === "groups" ? <GroupsPhase /> : null}
+            {phase === "r32" ? (
+              <KnockoutRound
+                label={t("knockout.r32")}
+                matches={r32Matches}
+                picks={r32Winners}
+                onPick={setR32Winner}
+              />
+            ) : null}
             {phase === "r16" ? (
               <KnockoutRound
                 label={t("knockout.r16")}
@@ -209,6 +224,11 @@ export function BracketDashboard() {
                 >
                   {nextLabel}
                 </button>
+                {!canAdvancePhase && phase === "r32" ? (
+                  <p className="text-sm text-on-surface-variant">
+                    {t("hintR32")}
+                  </p>
+                ) : null}
                 {!canAdvancePhase && phase === "r16" ? (
                   <p className="text-sm text-on-surface-variant">
                     {t("hintR16")}

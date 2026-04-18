@@ -62,20 +62,23 @@
       "groups": "Fase de grupos",
       "qf": "Cuartos de final",
       "r16": "Octavos de final",
+      "r32": "Dieciseisavos de final",
       "sf": "Semifinales",
       "third": "Tercer lugar"
     },
     "next": {
       "final": "Siguiente: tercer lugar",
-      "groups": "Siguiente: octavos de final",
+      "groups": "Siguiente: dieciseisavos de final",
       "qf": "Siguiente: semifinales",
       "r16": "Siguiente: cuartos de final",
+      "r32": "Siguiente: octavos de final",
       "sf": "Siguiente: final",
       "third": ""
     },
     "progressLabel": "Avance del bracket",
     "knockout": {
       "r16": "Octavos de final — elige al ganador de cada partido",
+      "r32": "Dieciseisavos de final — elige al ganador de cada partido",
       "qf": "Cuartos de final",
       "sf": "Semifinales",
       "final": "Final",
@@ -86,6 +89,7 @@
     "bracketCompleteStrong": "Finalizar predicción",
     "bracketCompleteLine2": "para guardar y ver tu resumen.",
     "hintR16": "Elige ganador en los 8 partidos para continuar.",
+    "hintR32": "Elige ganador en los 16 partidos para continuar.",
     "hintQf": "Elige ganador en los 4 partidos.",
     "hintSf": "Elige ganador en las 2 semifinales.",
     "hintFinal": "Elige al campeón.",
@@ -95,7 +99,8 @@
   },
   "GroupPanel": {
     "badge": "Elige 1º y 2º",
-    "intro": "Solo cuentan el primero y el segundo del grupo para octavos; el resto es informativo.",
+    "hostBadge": "Anfitrión — clasificado",
+    "hostFirstTitle": "1.er lugar (anfitrión)",
     "firstPlace": "1.er lugar",
     "secondPlace": "2.º lugar",
     "restTitle": "3.º y 4.º (orden del fixture)"
@@ -155,6 +160,7 @@
     "sharePhaseFinal": "Final",
     "sharePhaseQf": "Cuartos",
     "sharePhaseR16": "Octavos",
+    "sharePhaseR32": "Dieciseisavos",
     "sharePhaseSf": "Semifinales",
     "shareVs": "vs",
     "subtitle": "Tu predicción quedó registrada para el sorteo del premio de la final del Mundial 2026.",

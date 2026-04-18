@@ -1,6 +1,7 @@
 export type Team = {
   code: string;
   flagUrl: string;
+  host?: boolean;
   id: string;
   name: string;
 };
@@ -12,12 +13,20 @@ export type GroupDef = {
 };
 
 /** Fases del asistente (sin contar el formulario). */
-export type BracketPhase = "final" | "groups" | "qf" | "r16" | "sf" | "third";
+export type BracketPhase =
+  | "final"
+  | "groups"
+  | "qf"
+  | "r16"
+  | "r32"
+  | "sf"
+  | "third";
 
 export type KnockoutData = {
   championId: string;
   qf: Record<string, string>;
   r16: Record<string, string>;
+  r32: Record<string, string>;
   sf: Record<string, string>;
   thirdPlaceId: string;
 };

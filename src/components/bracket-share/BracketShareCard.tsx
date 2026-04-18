@@ -6,7 +6,8 @@ import { GROUPS, TEAMS } from "@/data/worldCup2026";
 import {
   buildFinalMatch,
   buildQFMatches,
-  buildR16Fixtures,
+  buildR16FromR32Results,
+  buildR32Fixtures,
   buildSFMatches,
 } from "@/lib/bracketKnockout";
 import type { BracketSubmission } from "@/types/bracket";
@@ -40,7 +41,8 @@ export const BracketShareCard = forwardRef<HTMLDivElement, BracketShareCardProps
   function BracketShareCard({ data }, ref) {
     const t = useTranslations("Success");
     const k = data.knockout;
-    const r16Fixtures = buildR16Fixtures(data.groups);
+    const r32Fixtures = buildR32Fixtures(data.groups);
+    const r16Fixtures = buildR16FromR32Results(k.r32);
     const qfMatches = buildQFMatches(k.r16);
     const sfMatches = buildSFMatches(k.qf);
     const finalMatch = buildFinalMatch(k.sf);
@@ -53,6 +55,9 @@ export const BracketShareCard = forwardRef<HTMLDivElement, BracketShareCardProps
     const homeFinal = TEAMS[finalMatch.homeId];
     const awayFinal = TEAMS[finalMatch.awayId];
 
+    const r32WinnerTeams = r32Fixtures
+      .map((m) => TEAMS[k.r32[m.id]])
+      .filter((team): team is NonNullable<typeof team> => Boolean(team));
     const r16WinnerTeams = r16Fixtures
       .map((m) => TEAMS[k.r16[m.id]])
       .filter((team): team is NonNullable<typeof team> => Boolean(team));
@@ -92,10 +97,21 @@ export const BracketShareCard = forwardRef<HTMLDivElement, BracketShareCardProps
             <p className={styles.phaseLabel}>{t("shareCardKnockout")}</p>
 
             <div className={styles.phaseBlock}>
+              <span className={styles.phaseLabel}>{t("sharePhaseR32")}</span>
+              <div className={styles.flagRow}>
+                {r32WinnerTeams.map((team, i) => (
+                  <span className={styles.flagSlot} key={`${team.id}-r32-${i}`}>
+                    <ShareFlag className={styles.imgWin} team={team} />
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            <div className={styles.phaseBlock}>
               <span className={styles.phaseLabel}>{t("sharePhaseR16")}</span>
               <div className={styles.flagRow}>
-                {r16WinnerTeams.map((team) => (
-                  <span className={styles.flagSlot} key={team.id}>
+                {r16WinnerTeams.map((team, i) => (
+                  <span className={styles.flagSlot} key={`${team.id}-r16-${i}`}>
                     <ShareFlag className={styles.imgWin} team={team} />
                   </span>
                 ))}
