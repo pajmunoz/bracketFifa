@@ -8,7 +8,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { GROUPS, normalizeHostGroupOrder, TEAMS } from "@/data/worldCup2026";
+import { GROUPS, sanitizeGroupOrder, TEAMS } from "@/data/worldCup2026";
 import { R32_IDS } from "@/lib/bracketKnockout";
 import type {
   BracketPhase,
@@ -36,7 +36,7 @@ const SF_IDS = ["sf-0", "sf-1"] as const;
 function initialOrders(): GroupOrders {
   const o: GroupOrders = {};
   for (const g of GROUPS) {
-    o[g.id] = normalizeHostGroupOrder(g.id, [...g.teamIds]);
+    o[g.id] = sanitizeGroupOrder(g.id, [...g.teamIds], g.teamIds);
   }
   return o;
 }
@@ -153,7 +153,9 @@ export function BracketProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const setTeamOrder = useCallback((groupId: string, teamIds: string[]) => {
-    const normalized = normalizeHostGroupOrder(groupId, teamIds);
+    const g = GROUPS.find((gr) => gr.id === groupId);
+    const base = g?.teamIds ?? teamIds;
+    const normalized = sanitizeGroupOrder(groupId, teamIds, base);
     setGroupOrders((prev) => ({ ...prev, [groupId]: normalized }));
   }, []);
 

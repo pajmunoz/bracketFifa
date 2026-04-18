@@ -4,6 +4,7 @@ export type Team = {
   host?: boolean;
   id: string;
   name: string;
+  nameEs: string;
 };
 
 export type GroupDef = {

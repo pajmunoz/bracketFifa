@@ -12,56 +12,56 @@ const HOST_TEAM_IDS = new Set(
   Object.values(HOST_TEAM_ID_BY_GROUP).filter(Boolean),
 );
 
-/** Fila: código FIFA, nombre (EN), código ISO para flagcdn.com */
-const TEAM_ROWS: readonly [string, string, string][] = [
-  ["MEX", "Mexico", "mx"],
-  ["RSA", "South Africa", "za"],
-  ["KOR", "Korea Republic", "kr"],
-  ["CZE", "Czechia", "cz"],
-  ["CAN", "Canada", "ca"],
-  ["BIH", "Bosnia and Herzegovina", "ba"],
-  ["QAT", "Qatar", "qa"],
-  ["SUI", "Switzerland", "ch"],
-  ["BRA", "Brazil", "br"],
-  ["MAR", "Morocco", "ma"],
-  ["HAI", "Haiti", "ht"],
-  ["SCO", "Scotland", "gb-sct"],
-  ["USA", "United States", "us"],
-  ["PAR", "Paraguay", "py"],
-  ["AUS", "Australia", "au"],
-  ["TUR", "Türkiye", "tr"],
-  ["GER", "Germany", "de"],
-  ["CUW", "Curaçao", "cw"],
-  ["CIV", "Côte d'Ivoire", "ci"],
-  ["ECU", "Ecuador", "ec"],
-  ["NED", "Netherlands", "nl"],
-  ["JPN", "Japan", "jp"],
-  ["SWE", "Sweden", "se"],
-  ["TUN", "Tunisia", "tn"],
-  ["BEL", "Belgium", "be"],
-  ["EGY", "Egypt", "eg"],
-  ["IRN", "IR Iran", "ir"],
-  ["NZL", "New Zealand", "nz"],
-  ["ESP", "Spain", "es"],
-  ["CPV", "Cabo Verde", "cv"],
-  ["KSA", "Saudi Arabia", "sa"],
-  ["URU", "Uruguay", "uy"],
-  ["FRA", "France", "fr"],
-  ["SEN", "Senegal", "sn"],
-  ["NOR", "Norway", "no"],
-  ["IRQ", "Iraq", "iq"],
-  ["ARG", "Argentina", "ar"],
-  ["ALG", "Algeria", "dz"],
-  ["AUT", "Austria", "at"],
-  ["JOR", "Jordan", "jo"],
-  ["POR", "Portugal", "pt"],
-  ["COD", "DR Congo", "cd"],
-  ["UZB", "Uzbekistan", "uz"],
-  ["COL", "Colombia", "co"],
-  ["ENG", "England", "gb-eng"],
-  ["CRO", "Croatia", "hr"],
-  ["GHA", "Ghana", "gh"],
-  ["PAN", "Panama", "pa"],
+/** Fila: código FIFA, nombre (EN), nombre (ES), código ISO para flagcdn.com */
+const TEAM_ROWS: readonly [string, string, string, string][] = [
+  ["MEX", "Mexico", "México", "mx"],
+  ["RSA", "South Africa", "Sudáfrica", "za"],
+  ["KOR", "Korea Republic", "Corea del Sur", "kr"],
+  ["CZE", "Czechia", "Chequia", "cz"],
+  ["CAN", "Canada", "Canadá", "ca"],
+  ["BIH", "Bosnia and Herzegovina", "Bosnia y Herzegovina", "ba"],
+  ["QAT", "Qatar", "Catar", "qa"],
+  ["SUI", "Switzerland", "Suiza", "ch"],
+  ["BRA", "Brazil", "Brasil", "br"],
+  ["MAR", "Morocco", "Marruecos", "ma"],
+  ["HAI", "Haiti", "Haití", "ht"],
+  ["SCO", "Scotland", "Escocia", "gb-sct"],
+  ["USA", "United States", "Estados Unidos", "us"],
+  ["PAR", "Paraguay", "Paraguay", "py"],
+  ["AUS", "Australia", "Australia", "au"],
+  ["TUR", "Türkiye", "Turquía", "tr"],
+  ["GER", "Germany", "Alemania", "de"],
+  ["CUW", "Curaçao", "Curazao", "cw"],
+  ["CIV", "Côte d'Ivoire", "Costa de Marfil", "ci"],
+  ["ECU", "Ecuador", "Ecuador", "ec"],
+  ["NED", "Netherlands", "Países Bajos", "nl"],
+  ["JPN", "Japan", "Japón", "jp"],
+  ["SWE", "Sweden", "Suecia", "se"],
+  ["TUN", "Tunisia", "Túnez", "tn"],
+  ["BEL", "Belgium", "Bélgica", "be"],
+  ["EGY", "Egypt", "Egipto", "eg"],
+  ["IRN", "IR Iran", "Irán", "ir"],
+  ["NZL", "New Zealand", "Nueva Zelanda", "nz"],
+  ["ESP", "Spain", "España", "es"],
+  ["CPV", "Cabo Verde", "Cabo Verde", "cv"],
+  ["KSA", "Saudi Arabia", "Arabia Saudita", "sa"],
+  ["URU", "Uruguay", "Uruguay", "uy"],
+  ["FRA", "France", "Francia", "fr"],
+  ["SEN", "Senegal", "Senegal", "sn"],
+  ["NOR", "Norway", "Noruega", "no"],
+  ["IRQ", "Iraq", "Irak", "iq"],
+  ["ARG", "Argentina", "Argentina", "ar"],
+  ["ALG", "Algeria", "Argelia", "dz"],
+  ["AUT", "Austria", "Austria", "at"],
+  ["JOR", "Jordan", "Jordania", "jo"],
+  ["POR", "Portugal", "Portugal", "pt"],
+  ["COD", "DR Congo", "R. D. Congo", "cd"],
+  ["UZB", "Uzbekistan", "Uzbekistán", "uz"],
+  ["COL", "Colombia", "Colombia", "co"],
+  ["ENG", "England", "Inglaterra", "gb-eng"],
+  ["CRO", "Croatia", "Croacia", "hr"],
+  ["GHA", "Ghana", "Ghana", "gh"],
+  ["PAN", "Panama", "Panamá", "pa"],
 ];
 
 function teamId(index: number): string {
@@ -71,7 +71,7 @@ function teamId(index: number): string {
 export const TEAMS: Record<string, Team> = Object.fromEntries(
   TEAM_ROWS.map((row, i) => {
     const id = teamId(i);
-    const [code, name, cc] = row;
+    const [code, name, nameEs, cc] = row;
     return [
       id,
       {
@@ -80,6 +80,7 @@ export const TEAMS: Record<string, Team> = Object.fromEntries(
         host: HOST_TEAM_IDS.has(id),
         id,
         name,
+        nameEs,
       } satisfies Team,
     ];
   }),
@@ -103,6 +104,33 @@ export const GROUPS: GroupDef[] = [
   { id: "K", label: "Grupo K", teamIds: groupTeamSlice(40, 4) },
   { id: "L", label: "Grupo L", teamIds: groupTeamSlice(44, 4) },
 ];
+
+/** Detecta orden inválido (duplicados, longitud o equipos que no son del grupo). */
+export function isValidGroupOrder(
+  order: readonly string[] | undefined,
+  base: readonly string[],
+): boolean {
+  if (!order || order.length !== base.length) {
+    return false;
+  }
+  if (new Set(order).size !== order.length) {
+    return false;
+  }
+  const baseSet = new Set(base);
+  return order.every((id) => baseSet.has(id));
+}
+
+/** Repara orden corrupto y aplica regla de anfitrión. */
+export function sanitizeGroupOrder(
+  groupId: string,
+  order: readonly string[] | undefined,
+  base: readonly string[],
+): string[] {
+  if (!isValidGroupOrder(order, base)) {
+    return normalizeHostGroupOrder(groupId, [...base]);
+  }
+  return normalizeHostGroupOrder(groupId, order ?? [...base]);
+}
 
 /** Garantiza anfitrión en 1.º si el estado quedara incoherente (p. ej. datos viejos). */
 export function normalizeHostGroupOrder(

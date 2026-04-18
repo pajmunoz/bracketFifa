@@ -83,3 +83,11 @@ body {
   font-family: var(--font-body);
   overflow-y: scroll;
 }
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+button:not(:disabled) {
+  cursor: pointer;
+}

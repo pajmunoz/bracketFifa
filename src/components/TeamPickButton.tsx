@@ -1,6 +1,8 @@
 "use client";
 
 import Image from "next/image";
+import { useMemo } from "react";
+import { getTeamTooltipText } from "@/data/teamTooltipsData";
 import type { Team } from "@/types/bracket";
 
 type Props = {
@@ -24,12 +26,14 @@ export function TeamPickButton({
     selected
       ? "flex items-center gap-3 rounded-xl border-2 border-primary bg-primary/10 p-4 text-left transition-all"
       : "flex items-center gap-3 rounded-xl border border-outline-variant/20 bg-surface-container-low p-4 text-left transition-all hover:border-primary/40";
-  const state = disabled ? `${base} cursor-default opacity-90` : base;
+  const state = disabled ? `${base} opacity-90` : base;
+  const title = useMemo(() => getTeamTooltipText(team), [team]);
   return (
     <button
       className={`${state} ${className}`.trim()}
       disabled={disabled}
       onClick={disabled ? () => {} : onClick}
+      title={title}
       type="button"
     >
       <Image

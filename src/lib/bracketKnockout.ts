@@ -39,16 +39,18 @@ function thirdPlace(groupId: string, orders: Record<string, string[]>): string {
 
 /**
  * Huecos FIFA "3.er del grupo X/Y/…": se usa el 3.er del grupo con letra
- * alfabéticamente más temprana del pool (predicción simplificada).
+ * alfabéticamente más temprana del pool entre los que aún no se asignaron
+ * a otro dieciseisavo (cada equipo solo puede aparecer en un partido).
  */
 function pickThirdFromPool(
   orders: Record<string, string[]>,
   pool: readonly string[],
+  usedThirdTeamIds: ReadonlySet<string>,
 ): string {
   const sorted = [...pool].sort((a, b) => a.localeCompare(b));
   for (const g of sorted) {
     const t = thirdPlace(g, orders);
-    if (t) {
+    if (t && !usedThirdTeamIds.has(t)) {
       return t;
     }
   }
@@ -59,9 +61,16 @@ function pickThirdFromPool(
 export function buildR32Fixtures(
   orders: Record<string, string[]>,
 ): KnockoutMatch[] {
+  const usedThirdTeamIds = new Set<string>();
   const p1 = (g: string) => firstPlace(g, orders);
   const p2 = (g: string) => secondPlace(g, orders);
-  const p3 = (pool: readonly string[]) => pickThirdFromPool(orders, pool);
+  const p3 = (pool: readonly string[]) => {
+    const t = pickThirdFromPool(orders, pool, usedThirdTeamIds);
+    if (t) {
+      usedThirdTeamIds.add(t);
+    }
+    return t;
+  };
 
   return [
     { awayId: p2("B"), homeId: p2("A"), id: "r32-0" },

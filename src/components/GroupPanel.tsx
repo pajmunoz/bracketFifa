@@ -1,8 +1,15 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { useLayoutEffect } from "react";
 import type { GroupDef } from "@/types/bracket";
-import { HOST_TEAM_ID_BY_GROUP, TEAMS } from "@/data/worldCup2026";
+import {
+  HOST_TEAM_ID_BY_GROUP,
+  isValidGroupOrder,
+  normalizeHostGroupOrder,
+  sanitizeGroupOrder,
+  TEAMS,
+} from "@/data/worldCup2026";
 import { useBracket } from "@/context/BracketContext";
 import { TeamPickButton } from "@/components/TeamPickButton";
 import { buildGroupOrderFromPicks } from "@/lib/groupOrder";
@@ -16,7 +23,20 @@ export function GroupPanel({ group }: Props) {
   const { groupOrders, setTeamOrder } = useBracket();
   const hostId = HOST_TEAM_ID_BY_GROUP[group.id];
   const hostTeam = hostId ? TEAMS[hostId] : undefined;
-  const order = groupOrders[group.id] ?? group.teamIds;
+  const rawOrder = groupOrders[group.id] ?? group.teamIds;
+  const order = sanitizeGroupOrder(group.id, rawOrder, group.teamIds);
+
+  useLayoutEffect(() => {
+    const raw = groupOrders[group.id];
+    if (!raw || isValidGroupOrder(raw, group.teamIds)) {
+      return;
+    }
+    setTeamOrder(
+      group.id,
+      normalizeHostGroupOrder(group.id, [...group.teamIds]),
+    );
+  }, [group.id, group.teamIds, groupOrders, setTeamOrder]);
+
   const firstId = order[0] ?? "";
   const secondId = order[1] ?? "";
 
@@ -51,7 +71,10 @@ export function GroupPanel({ group }: Props) {
   }
 
   const secondChoices = group.teamIds.filter((id) => id !== firstId);
-  const restIds = group.teamIds.filter((id) => id !== firstId && id !== secondId);
+  const restCodes = order
+    .slice(2)
+    .map((tid) => TEAMS[tid]?.code)
+    .filter((code): code is string => Boolean(code));
 
   return (
     <div className="rounded-xl border border-outline-variant/15 bg-surface-container-lowest p-4 shadow-sm">
@@ -85,7 +108,7 @@ export function GroupPanel({ group }: Props) {
                 }
                 return (
                   <TeamPickButton
-                    key={tid}
+                    key={`${group.id}-1-${tid}`}
                     selected={tid === firstId}
                     team={team}
                     onClick={() => {
@@ -109,7 +132,7 @@ export function GroupPanel({ group }: Props) {
               }
               return (
                 <TeamPickButton
-                  key={tid}
+                  key={`${group.id}-2-${tid}`}
                   selected={tid === secondId}
                   team={team}
                   onClick={() => {
@@ -120,28 +143,14 @@ export function GroupPanel({ group }: Props) {
             })}
           </div>
         </div>
-        {restIds.length > 0 ? (
-          <div className="border-outline-variant/15 border-t pt-4">
-            <p className="font-label mb-2 text-xs font-bold tracking-widest text-on-surface-variant uppercase">
+        {restCodes.length > 0 ? (
+          <p className="border-outline-variant/15 font-label border-t pt-4 text-xs text-on-surface-variant">
+            <span className="font-bold tracking-widest uppercase">
               {t("restTitle")}
-            </p>
-            <ul className="flex flex-wrap gap-2">
-              {restIds.map((tid) => {
-                const team = TEAMS[tid];
-                if (!team) {
-                  return null;
-                }
-                return (
-                  <li
-                    className="font-label rounded-lg bg-surface-container-high px-3 py-1.5 text-xs text-on-surface-variant"
-                    key={tid}
-                  >
-                    {team.code} — {team.name}
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
+            </span>
+            {": "}
+            {restCodes.join(" · ")}
+          </p>
         ) : null}
       </div>
     </div>
