@@ -121,6 +121,7 @@
 .outer {
   background: #020617;
   isolation: isolate;
+  overscroll-behavior-y: none;
   position: relative;
 }
 
@@ -225,7 +226,9 @@
 }
 
 .scrollTrack {
+  background: #020617;
   height: 480vh;
+  overscroll-behavior-y: none;
   position: relative;
 }
 
@@ -236,8 +239,8 @@
   flex-direction: column;
   flex: 1;
   left: 0;
+  min-height: 100vh;
   min-height: 100dvh;
-  min-height: 100svh;
   overflow: hidden;
   position: sticky;
   top: 0;
