@@ -35,12 +35,6 @@ export function NavBar() {
         </div>
         <div className="flex shrink-0 items-center gap-3 md:gap-4">
           <LanguageSwitcher />
-          <Link
-            className="kinetic-gradient hidden rounded-full px-6 py-2 font-headline font-bold text-on-primary transition-all duration-150 active:scale-95 lg:block"
-            href={`${ROUTES.home}#register`}
-          >
-            {t("registerPrediction")}
-          </Link>
         </div>
       </div>
     </nav>

@@ -17,15 +17,6 @@ import { captureBracketShareCardAsPng } from "@/lib/downloadBracketSharePng";
 import { entryShareAbsoluteUrl } from "@/lib/entrySharePath";
 import { ROUTES } from "@/lib/routes";
 import { routing, useRouter } from "@/i18n/routing";
-import {
-  assignPopupOrOpen,
-  buildFacebookShareUrl,
-  buildTwitterIntentUrl,
-  buildWhatsAppShareUrl,
-  openInstagramHint,
-  shareBracketImageNative,
-  SOCIAL_PREOPEN_POPUP_FEATURES,
-} from "@/lib/socialShare";
 import type { BracketSubmission } from "@/types/bracket";
 import { STORAGE_KEY } from "@/types/bracket";
 import { Footer } from "@/components/Footer";
@@ -38,7 +29,8 @@ export function SuccessView() {
   const tVs = useTranslations("KnockoutRound");
   const [data, setData] = useState<BracketSubmission | null>(null);
   const [downloadBusy, setDownloadBusy] = useState(false);
-  const [socialBusy, setSocialBusy] = useState(false);
+  const [entryLinkCopied, setEntryLinkCopied] = useState(false);
+  const entryLinkCopiedTimer = useRef<number | null>(null);
   const shareBlobRef = useRef<Blob | null>(null);
   const shareCardRef = useRef<HTMLDivElement>(null);
 
@@ -66,9 +58,6 @@ export function SuccessView() {
     shareBlobRef.current = null;
   }, [data?.entryId]);
 
-  const origin =
-    typeof window !== "undefined" ? window.location.origin : "";
-
   const getShareBlob = useCallback(async () => {
     if (shareBlobRef.current) {
       return shareBlobRef.current;
@@ -94,12 +83,69 @@ export function SuccessView() {
       anchor.href = objectUrl;
       anchor.click();
       URL.revokeObjectURL(objectUrl);
+
+      const baseOrigin = window.location.origin.replace(/\/$/, "");
+      const entryLink = entryShareAbsoluteUrl(baseOrigin, locale, data.entryId);
+      const bracketPath =
+        locale === routing.defaultLocale
+          ? ROUTES.home
+          : `/${locale}${ROUTES.home}`;
+      const bracketLink = `${baseOrigin}${bracketPath}`;
+      const clip = t("shareDownloadCaptionClipboard", {
+        bracketLink,
+        entryId: data.entryId,
+        entryLink,
+      });
+      void navigator.clipboard.writeText(clip).catch(() => {
+        /* permiso denegado o contexto no seguro */
+      });
     } catch {
       window.alert(t("shareExportError"));
     } finally {
       setDownloadBusy(false);
     }
-  }, [data, getShareBlob, t]);
+  }, [data, getShareBlob, locale, t]);
+
+  const handleCopyEntryLink = useCallback(() => {
+    if (!data) {
+      return;
+    }
+    const baseOrigin = window.location.origin.replace(/\/$/, "");
+    const entryLink = entryShareAbsoluteUrl(baseOrigin, locale, data.entryId);
+    const bracketPath =
+      locale === routing.defaultLocale
+        ? ROUTES.home
+        : `/${locale}${ROUTES.home}`;
+    const bracketLink = `${baseOrigin}${bracketPath}`;
+    const text = t("copyEntryLinkClipboard", {
+      bracketLink,
+      entryId: data.entryId,
+      entryLink,
+    });
+    void navigator.clipboard
+      .writeText(text)
+      .then(() => {
+        setEntryLinkCopied(true);
+        if (entryLinkCopiedTimer.current !== null) {
+          window.clearTimeout(entryLinkCopiedTimer.current);
+        }
+        entryLinkCopiedTimer.current = window.setTimeout(() => {
+          setEntryLinkCopied(false);
+          entryLinkCopiedTimer.current = null;
+        }, 2500);
+      })
+      .catch(() => {
+        window.prompt(t("copyEntryLinkFallback"), text);
+      });
+  }, [data, locale, t]);
+
+  useEffect(() => {
+    return () => {
+      if (entryLinkCopiedTimer.current !== null) {
+        window.clearTimeout(entryLinkCopiedTimer.current);
+      }
+    };
+  }, []);
 
   const handleAnotherPrediction = useCallback(() => {
     if (typeof window !== "undefined") {
@@ -107,137 +153,6 @@ export function SuccessView() {
     }
     router.replace(ROUTES.home);
   }, [router]);
-
-  const handleShare = useCallback(
-    async (target: "whatsapp" | "twitter" | "instagram" | "facebook") => {
-      if (!data || !shareCardRef.current) {
-        return;
-      }
-      const baseOrigin = origin.replace(/\/$/, "");
-      const entryUrl = entryShareAbsoluteUrl(baseOrigin, locale, data.entryId);
-      const bracketPath =
-        locale === routing.defaultLocale
-          ? ROUTES.home
-          : `/${locale}${ROUTES.home}`;
-      const bracketUrl = `${baseOrigin}${bracketPath}`;
-
-      const fallbackTab =
-        target === "instagram"
-          ? null
-          : window.open("about:blank", "_blank", SOCIAL_PREOPEN_POPUP_FEATURES);
-
-      if (target === "facebook") {
-        const composer = t("shareChallengeWhatsapp", {
-          bracketLink: bracketUrl,
-          entryId: data.entryId,
-          entryLink: entryUrl,
-        });
-        void navigator.clipboard.writeText(composer).catch(() => {
-          /* sin permiso o sin contexto seguro: el usuario puede copiar a mano */
-        });
-      }
-
-      setSocialBusy(true);
-      try {
-        const blob = await getShareBlob();
-        const nativeText = t("shareChallengeFull", {
-          entryId: data.entryId,
-        });
-        const nativeResult = await shareBracketImageNative(blob, {
-          text: nativeText,
-          title: t("shareNativeTitle"),
-          url: entryUrl,
-        });
-        if (nativeResult === "shared" || nativeResult === "cancelled") {
-          fallbackTab?.close();
-          return;
-        }
-
-        if (target === "whatsapp") {
-          assignPopupOrOpen(
-            fallbackTab,
-            buildWhatsAppShareUrl(
-              t("shareChallengeWhatsapp", {
-                bracketLink: bracketUrl,
-                entryId: data.entryId,
-                entryLink: entryUrl,
-              }),
-            ),
-          );
-          return;
-        }
-        if (target === "twitter") {
-          assignPopupOrOpen(
-            fallbackTab,
-            buildTwitterIntentUrl(
-              t("shareChallengeTweet", { entryId: data.entryId }),
-              entryUrl,
-            ),
-          );
-          return;
-        }
-        if (target === "facebook") {
-          assignPopupOrOpen(
-            fallbackTab,
-            buildFacebookShareUrl(
-              entryUrl,
-              t("shareChallengeWhatsapp", {
-                bracketLink: bracketUrl,
-                entryId: data.entryId,
-                entryLink: entryUrl,
-              }),
-            ),
-          );
-          return;
-        }
-        fallbackTab?.close();
-        openInstagramHint(t("instagramAlert"));
-      } catch {
-        try {
-          if (target === "whatsapp") {
-            assignPopupOrOpen(
-              fallbackTab,
-              buildWhatsAppShareUrl(
-                t("shareChallengeWhatsapp", {
-                  bracketLink: bracketUrl,
-                  entryId: data.entryId,
-                  entryLink: entryUrl,
-                }),
-              ),
-            );
-          } else if (target === "twitter") {
-            assignPopupOrOpen(
-              fallbackTab,
-              buildTwitterIntentUrl(
-                t("shareChallengeTweet", { entryId: data.entryId }),
-                entryUrl,
-              ),
-            );
-          } else if (target === "facebook") {
-            assignPopupOrOpen(
-              fallbackTab,
-              buildFacebookShareUrl(
-                entryUrl,
-                t("shareChallengeWhatsapp", {
-                  bracketLink: bracketUrl,
-                  entryId: data.entryId,
-                  entryLink: entryUrl,
-                }),
-              ),
-            );
-          } else {
-            openInstagramHint(t("instagramAlert"));
-          }
-        } catch {
-          fallbackTab?.close();
-          window.alert(t("shareExportError"));
-        }
-      } finally {
-        setSocialBusy(false);
-      }
-    },
-    [data, getShareBlob, locale, origin, t],
-  );
 
   if (!data) {
     return (
@@ -276,7 +191,7 @@ export function SuccessView() {
               src={SUCCESS_STADIUM_BG}
             />
           </div>
-          <div className="pointer-events-none absolute inset-0 -z-[5] opacity-40">
+          <div className="pointer-events-none absolute inset-0 -z-5 opacity-40">
             <div className="absolute top-10 left-1/4 h-4 w-4 rotate-45 rounded-sm bg-primary-container" />
             <div className="absolute top-20 right-1/3 h-3 w-3 rounded-full bg-secondary-container" />
             <div className="absolute top-40 left-10 h-2 w-5 -rotate-12 rounded-lg bg-primary" />
@@ -406,96 +321,58 @@ export function SuccessView() {
                   })}
                 </div>
               </div>
-              <button
-                type="button"
-                disabled={downloadBusy || socialBusy}
-                className="group mt-8 flex items-center justify-center gap-2 rounded-xl border-2 border-primary py-4 font-headline font-bold text-primary transition-all hover:bg-primary/5 disabled:cursor-not-allowed disabled:opacity-60"
-                onClick={() => {
-                  void handleSharePng();
-                }}
-              >
-                <span className="material-symbols-outlined transition-transform group-hover:scale-110">
-                  image
-                </span>
-                {downloadBusy ? t("shareExporting") : t("downloadSharePng")}
-              </button>
+              <div className="mt-8 flex flex-col gap-2">
+                <button
+                  type="button"
+                  disabled={downloadBusy}
+                  className="group flex w-full items-center justify-center gap-2 rounded-xl border-2 border-primary py-4 font-headline font-bold text-primary transition-all hover:bg-primary/5 disabled:cursor-not-allowed disabled:opacity-60"
+                  onClick={() => {
+                    void handleSharePng();
+                  }}
+                >
+                  <span className="material-symbols-outlined transition-transform group-hover:scale-110">
+                    download
+                  </span>
+                  {downloadBusy ? t("shareExporting") : t("downloadSharePng")}
+                </button>
+                <button
+                  type="button"
+                  disabled={downloadBusy}
+                  className="group flex w-full items-center justify-center gap-2 rounded-xl border-2 border-outline-variant py-4 font-headline font-bold text-on-surface transition-all hover:bg-surface-container-high disabled:cursor-not-allowed disabled:opacity-60"
+                  onClick={() => {
+                    handleCopyEntryLink();
+                  }}
+                >
+                  <span className="material-symbols-outlined transition-transform group-hover:scale-110">
+                    link
+                  </span>
+                  {entryLinkCopied ? t("copyEntryLinkCopied") : t("copyEntryLinkButton")}
+                </button>
+              </div>
             </div>
           </div>
           <div className="flex flex-col gap-6 lg:col-span-4">
             <div className="flex h-full flex-col rounded-xl bg-surface-container-high/50 p-8">
+              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/15">
+                <span
+                  className="material-symbols-outlined text-2xl text-primary"
+                  style={{ fontVariationSettings: "'FILL' 1" }}
+                >
+                  ios_share
+                </span>
+              </div>
               <h4 className="font-headline mb-2 text-lg font-extrabold text-on-surface">
                 {t("challengeTitle")}
               </h4>
-              <p className="mb-4 text-sm font-medium text-on-surface-variant">
+              <p className="mb-6 text-sm font-medium text-on-surface-variant">
                 {t("challengeBody")}
               </p>
-              <p className="mb-6 text-xs leading-relaxed text-on-surface-variant">
-                {t("shareNativeHint")}
-              </p>
-              <div className="grid grow grid-cols-2 gap-4">
-                <button
-                  type="button"
-                  disabled={downloadBusy || socialBusy}
-                  className="flex flex-col items-center justify-center gap-2 rounded-xl border border-outline-variant/10 bg-surface-container-lowest p-4 shadow-sm transition-all hover:shadow-md disabled:cursor-not-allowed disabled:opacity-60"
-                  onClick={() => {
-                    void handleShare("whatsapp");
-                  }}
-                >
-                  <span className="material-symbols-outlined text-3xl text-emerald-500">
-                    chat
-                  </span>
-                  <span className="font-label text-xs font-bold uppercase">
-                    WhatsApp
-                  </span>
-                </button>
-                <button
-                  type="button"
-                  disabled={downloadBusy || socialBusy}
-                  className="flex flex-col items-center justify-center gap-2 rounded-xl border border-outline-variant/10 bg-surface-container-lowest p-4 shadow-sm transition-all hover:shadow-md disabled:cursor-not-allowed disabled:opacity-60"
-                  onClick={() => {
-                    void handleShare("twitter");
-                  }}
-                >
-                  <span className="material-symbols-outlined text-3xl text-slate-900">
-                    close
-                  </span>
-                  <span className="font-label text-xs font-bold uppercase">
-                    Twitter/X
-                  </span>
-                </button>
-                <button
-                  type="button"
-                  disabled={downloadBusy || socialBusy}
-                  className="flex flex-col items-center justify-center gap-2 rounded-xl border border-outline-variant/10 bg-surface-container-lowest p-4 shadow-sm transition-all hover:shadow-md disabled:cursor-not-allowed disabled:opacity-60"
-                  onClick={() => {
-                    void handleShare("instagram");
-                  }}
-                >
-                  <span className="material-symbols-outlined text-3xl text-pink-600">
-                    photo_camera
-                  </span>
-                  <span className="font-label text-xs font-bold uppercase">
-                    Instagram
-                  </span>
-                </button>
-                <button
-                  type="button"
-                  disabled={downloadBusy || socialBusy}
-                  title={t("shareFacebookPasteHint")}
-                  className="flex flex-col items-center justify-center gap-2 rounded-xl border border-outline-variant/10 bg-surface-container-lowest p-4 shadow-sm transition-all hover:shadow-md disabled:cursor-not-allowed disabled:opacity-60"
-                  onClick={() => {
-                    void handleShare("facebook");
-                  }}
-                >
-                  <span className="material-symbols-outlined text-3xl text-blue-700">
-                    social_leaderboard
-                  </span>
-                  <span className="font-label text-xs font-bold uppercase">
-                    Facebook
-                  </span>
-                </button>
-              </div>
-              <div className="mt-8 rounded-xl border border-primary/10 bg-primary/5 p-4">
+              <ol className="mb-6 list-decimal space-y-3 pl-5 text-sm leading-relaxed text-on-surface">
+                <li>{t("shareImageStep1")}</li>
+                <li>{t("shareImageStep2")}</li>
+                <li>{t("shareImageStep3")}</li>
+              </ol>
+              <div className="mt-auto rounded-xl border border-primary/10 bg-primary/5 p-4">
                 <p className="text-xs leading-relaxed font-bold text-primary">
                   <span className="material-symbols-outlined mr-1 align-middle text-base">
                     info
