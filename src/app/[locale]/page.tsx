@@ -1,6 +1,7 @@
-import { BracketProvider } from "@/context/BracketContext";
-import { BracketDashboard } from "@/components/BracketDashboard";
+import { routing } from "@/i18n/routing";
+import { ROUTES } from "@/lib/routes";
 import { setRequestLocale } from "next-intl/server";
+import { redirect } from "next/navigation";
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -9,9 +10,9 @@ type Props = {
 export default async function Home({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
-  return (
-    <BracketProvider>
-      <BracketDashboard />
-    </BracketProvider>
-  );
+  const welcomePath =
+    locale === routing.defaultLocale
+      ? ROUTES.welcome
+      : `/${locale}${ROUTES.welcome}`;
+  redirect(welcomePath);
 }

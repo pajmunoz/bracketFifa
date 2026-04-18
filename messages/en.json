@@ -6,6 +6,16 @@
   "ConfirmacionMetadata": {
     "title": "Prediction saved | 2026 BRACKET"
   },
+  "WelcomeMetadata": {
+    "description": "Welcome to the 2026 FIFA World Cup bracket predictor by SierraLabs.",
+    "title": "Welcome | 2026 BRACKET"
+  },
+  "Welcome": {
+    "enter": "Enter",
+    "heroTitle": "Bracket FIFA 26",
+    "loadingFilm": "Loading filmstrip",
+    "presenta": "presenta"
+  },
   "Nav": {
     "bracket": "Bracket",
     "registerPrediction": "Register prediction",
@@ -17,7 +27,7 @@
     "toSpanish": "Español"
   },
   "Footer": {
-    "copyright": "© 2026 Kinetic Arena. All rights reserved.",
+    "copyright": "© 2026 SierraLabs. All rights reserved.",
     "links": {
       "contact": "Contact support",
       "fifa": "FIFA official",
