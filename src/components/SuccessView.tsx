@@ -1,19 +1,30 @@
 "use client";
 
 import Image from "next/image";
-import { useTranslations } from "next-intl";
-import { startTransition, useCallback, useEffect, useState } from "react";
+import { useLocale, useTranslations } from "next-intl";
+import {
+  startTransition,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { TEAMS } from "@/data/worldCup2026";
 import { buildSFMatches } from "@/lib/bracketKnockout";
 import { SUCCESS_BALL_TEXTURE, SUCCESS_STADIUM_BG } from "@/data/successAssets";
-import { generateBracketPdf } from "@/lib/generateBracketPdf";
+import { BracketShareCard } from "@/components/bracket-share/BracketShareCard";
+import { captureBracketShareCardAsPng } from "@/lib/downloadBracketSharePng";
+import { entryShareAbsoluteUrl } from "@/lib/entrySharePath";
 import { ROUTES } from "@/lib/routes";
-import { useRouter } from "@/i18n/routing";
+import { routing, useRouter } from "@/i18n/routing";
 import {
-  openFacebook,
+  assignPopupOrOpen,
+  buildFacebookShareUrl,
+  buildTwitterIntentUrl,
+  buildWhatsAppShareUrl,
   openInstagramHint,
-  openTwitter,
-  openWhatsApp,
+  shareBracketImageNative,
+  SOCIAL_PREOPEN_POPUP_FEATURES,
 } from "@/lib/socialShare";
 import type { BracketSubmission } from "@/types/bracket";
 import { STORAGE_KEY } from "@/types/bracket";
@@ -22,9 +33,14 @@ import { SuccessHeader } from "@/components/SuccessHeader";
 
 export function SuccessView() {
   const router = useRouter();
+  const locale = useLocale();
   const t = useTranslations("Success");
   const tVs = useTranslations("KnockoutRound");
   const [data, setData] = useState<BracketSubmission | null>(null);
+  const [downloadBusy, setDownloadBusy] = useState(false);
+  const [socialBusy, setSocialBusy] = useState(false);
+  const shareBlobRef = useRef<Blob | null>(null);
+  const shareCardRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const raw = window.sessionStorage.getItem(STORAGE_KEY);
@@ -46,14 +62,44 @@ export function SuccessView() {
     }
   }, [router]);
 
+  useEffect(() => {
+    shareBlobRef.current = null;
+  }, [data?.entryId]);
+
   const origin =
     typeof window !== "undefined" ? window.location.origin : "";
 
-  const handlePdf = useCallback(() => {
-    if (data) {
-      generateBracketPdf(data);
+  const getShareBlob = useCallback(async () => {
+    if (shareBlobRef.current) {
+      return shareBlobRef.current;
     }
-  }, [data]);
+    if (!shareCardRef.current) {
+      throw new Error("missing share card");
+    }
+    const blob = await captureBracketShareCardAsPng(shareCardRef.current);
+    shareBlobRef.current = blob;
+    return blob;
+  }, []);
+
+  const handleSharePng = useCallback(async () => {
+    if (!data || !shareCardRef.current) {
+      return;
+    }
+    setDownloadBusy(true);
+    try {
+      const blob = await getShareBlob();
+      const objectUrl = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.download = "bracket-fifa-26-share.png";
+      anchor.href = objectUrl;
+      anchor.click();
+      URL.revokeObjectURL(objectUrl);
+    } catch {
+      window.alert(t("shareExportError"));
+    } finally {
+      setDownloadBusy(false);
+    }
+  }, [data, getShareBlob, t]);
 
   const handleAnotherPrediction = useCallback(() => {
     if (typeof window !== "undefined") {
@@ -63,29 +109,134 @@ export function SuccessView() {
   }, [router]);
 
   const handleShare = useCallback(
-    (target: "whatsapp" | "twitter" | "instagram" | "facebook") => {
-      if (!data) {
+    async (target: "whatsapp" | "twitter" | "instagram" | "facebook") => {
+      if (!data || !shareCardRef.current) {
         return;
       }
-      const text = t("shareText", {
-        entryId: data.entryId,
-        origin,
-      });
-      if (target === "whatsapp") {
-        openWhatsApp(text);
-        return;
-      }
-      if (target === "twitter") {
-        openTwitter(text);
-        return;
-      }
+      const baseOrigin = origin.replace(/\/$/, "");
+      const entryUrl = entryShareAbsoluteUrl(baseOrigin, locale, data.entryId);
+      const bracketPath =
+        locale === routing.defaultLocale
+          ? ROUTES.home
+          : `/${locale}${ROUTES.home}`;
+      const bracketUrl = `${baseOrigin}${bracketPath}`;
+
+      const fallbackTab =
+        target === "instagram"
+          ? null
+          : window.open("about:blank", "_blank", SOCIAL_PREOPEN_POPUP_FEATURES);
+
       if (target === "facebook") {
-        openFacebook(origin);
-        return;
+        const composer = t("shareChallengeWhatsapp", {
+          bracketLink: bracketUrl,
+          entryId: data.entryId,
+          entryLink: entryUrl,
+        });
+        void navigator.clipboard.writeText(composer).catch(() => {
+          /* sin permiso o sin contexto seguro: el usuario puede copiar a mano */
+        });
       }
-      openInstagramHint(t("instagramAlert"));
+
+      setSocialBusy(true);
+      try {
+        const blob = await getShareBlob();
+        const nativeText = t("shareChallengeFull", {
+          entryId: data.entryId,
+        });
+        const nativeResult = await shareBracketImageNative(blob, {
+          text: nativeText,
+          title: t("shareNativeTitle"),
+          url: entryUrl,
+        });
+        if (nativeResult === "shared" || nativeResult === "cancelled") {
+          fallbackTab?.close();
+          return;
+        }
+
+        if (target === "whatsapp") {
+          assignPopupOrOpen(
+            fallbackTab,
+            buildWhatsAppShareUrl(
+              t("shareChallengeWhatsapp", {
+                bracketLink: bracketUrl,
+                entryId: data.entryId,
+                entryLink: entryUrl,
+              }),
+            ),
+          );
+          return;
+        }
+        if (target === "twitter") {
+          assignPopupOrOpen(
+            fallbackTab,
+            buildTwitterIntentUrl(
+              t("shareChallengeTweet", { entryId: data.entryId }),
+              entryUrl,
+            ),
+          );
+          return;
+        }
+        if (target === "facebook") {
+          assignPopupOrOpen(
+            fallbackTab,
+            buildFacebookShareUrl(
+              entryUrl,
+              t("shareChallengeWhatsapp", {
+                bracketLink: bracketUrl,
+                entryId: data.entryId,
+                entryLink: entryUrl,
+              }),
+            ),
+          );
+          return;
+        }
+        fallbackTab?.close();
+        openInstagramHint(t("instagramAlert"));
+      } catch {
+        try {
+          if (target === "whatsapp") {
+            assignPopupOrOpen(
+              fallbackTab,
+              buildWhatsAppShareUrl(
+                t("shareChallengeWhatsapp", {
+                  bracketLink: bracketUrl,
+                  entryId: data.entryId,
+                  entryLink: entryUrl,
+                }),
+              ),
+            );
+          } else if (target === "twitter") {
+            assignPopupOrOpen(
+              fallbackTab,
+              buildTwitterIntentUrl(
+                t("shareChallengeTweet", { entryId: data.entryId }),
+                entryUrl,
+              ),
+            );
+          } else if (target === "facebook") {
+            assignPopupOrOpen(
+              fallbackTab,
+              buildFacebookShareUrl(
+                entryUrl,
+                t("shareChallengeWhatsapp", {
+                  bracketLink: bracketUrl,
+                  entryId: data.entryId,
+                  entryLink: entryUrl,
+                }),
+              ),
+            );
+          } else {
+            openInstagramHint(t("instagramAlert"));
+          }
+        } catch {
+          fallbackTab?.close();
+          window.alert(t("shareExportError"));
+        }
+      } finally {
+        setSocialBusy(false);
+      }
     },
-    [data, origin, t],
+    [data, getShareBlob, locale, origin, t],
   );
 
   if (!data) {
@@ -106,6 +257,12 @@ export function SuccessView() {
 
   return (
     <div className="flex min-h-screen flex-col bg-surface font-body text-on-surface antialiased">
+      <div
+        aria-hidden
+        className="pointer-events-none fixed top-0 -left-[14000px] z-0"
+      >
+        <BracketShareCard ref={shareCardRef} data={data} />
+      </div>
       <SuccessHeader />
       <main className="min-h-screen pb-16 pt-24">
         <section className="relative min-h-[280px] overflow-hidden px-6 py-12 text-center lg:min-h-[320px] lg:py-20">
@@ -251,13 +408,16 @@ export function SuccessView() {
               </div>
               <button
                 type="button"
-                className="group mt-8 flex items-center justify-center gap-2 rounded-xl border-2 border-primary py-4 font-headline font-bold text-primary transition-all hover:bg-primary/5"
-                onClick={handlePdf}
+                disabled={downloadBusy || socialBusy}
+                className="group mt-8 flex items-center justify-center gap-2 rounded-xl border-2 border-primary py-4 font-headline font-bold text-primary transition-all hover:bg-primary/5 disabled:cursor-not-allowed disabled:opacity-60"
+                onClick={() => {
+                  void handleSharePng();
+                }}
               >
                 <span className="material-symbols-outlined transition-transform group-hover:scale-110">
-                  download
+                  image
                 </span>
-                {t("downloadPdf")}
+                {downloadBusy ? t("shareExporting") : t("downloadSharePng")}
               </button>
             </div>
           </div>
@@ -266,15 +426,19 @@ export function SuccessView() {
               <h4 className="font-headline mb-2 text-lg font-extrabold text-on-surface">
                 {t("challengeTitle")}
               </h4>
-              <p className="mb-8 text-sm font-medium text-on-surface-variant">
+              <p className="mb-4 text-sm font-medium text-on-surface-variant">
                 {t("challengeBody")}
               </p>
-              <div className="grid flex-grow grid-cols-2 gap-4">
+              <p className="mb-6 text-xs leading-relaxed text-on-surface-variant">
+                {t("shareNativeHint")}
+              </p>
+              <div className="grid grow grid-cols-2 gap-4">
                 <button
                   type="button"
-                  className="flex flex-col items-center justify-center gap-2 rounded-xl border border-outline-variant/10 bg-surface-container-lowest p-4 shadow-sm transition-all hover:shadow-md"
+                  disabled={downloadBusy || socialBusy}
+                  className="flex flex-col items-center justify-center gap-2 rounded-xl border border-outline-variant/10 bg-surface-container-lowest p-4 shadow-sm transition-all hover:shadow-md disabled:cursor-not-allowed disabled:opacity-60"
                   onClick={() => {
-                    handleShare("whatsapp");
+                    void handleShare("whatsapp");
                   }}
                 >
                   <span className="material-symbols-outlined text-3xl text-emerald-500">
@@ -286,9 +450,10 @@ export function SuccessView() {
                 </button>
                 <button
                   type="button"
-                  className="flex flex-col items-center justify-center gap-2 rounded-xl border border-outline-variant/10 bg-surface-container-lowest p-4 shadow-sm transition-all hover:shadow-md"
+                  disabled={downloadBusy || socialBusy}
+                  className="flex flex-col items-center justify-center gap-2 rounded-xl border border-outline-variant/10 bg-surface-container-lowest p-4 shadow-sm transition-all hover:shadow-md disabled:cursor-not-allowed disabled:opacity-60"
                   onClick={() => {
-                    handleShare("twitter");
+                    void handleShare("twitter");
                   }}
                 >
                   <span className="material-symbols-outlined text-3xl text-slate-900">
@@ -300,9 +465,10 @@ export function SuccessView() {
                 </button>
                 <button
                   type="button"
-                  className="flex flex-col items-center justify-center gap-2 rounded-xl border border-outline-variant/10 bg-surface-container-lowest p-4 shadow-sm transition-all hover:shadow-md"
+                  disabled={downloadBusy || socialBusy}
+                  className="flex flex-col items-center justify-center gap-2 rounded-xl border border-outline-variant/10 bg-surface-container-lowest p-4 shadow-sm transition-all hover:shadow-md disabled:cursor-not-allowed disabled:opacity-60"
                   onClick={() => {
-                    handleShare("instagram");
+                    void handleShare("instagram");
                   }}
                 >
                   <span className="material-symbols-outlined text-3xl text-pink-600">
@@ -314,9 +480,11 @@ export function SuccessView() {
                 </button>
                 <button
                   type="button"
-                  className="flex flex-col items-center justify-center gap-2 rounded-xl border border-outline-variant/10 bg-surface-container-lowest p-4 shadow-sm transition-all hover:shadow-md"
+                  disabled={downloadBusy || socialBusy}
+                  title={t("shareFacebookPasteHint")}
+                  className="flex flex-col items-center justify-center gap-2 rounded-xl border border-outline-variant/10 bg-surface-container-lowest p-4 shadow-sm transition-all hover:shadow-md disabled:cursor-not-allowed disabled:opacity-60"
                   onClick={() => {
-                    handleShare("facebook");
+                    void handleShare("facebook");
                   }}
                 >
                   <span className="material-symbols-outlined text-3xl text-blue-700">

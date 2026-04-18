@@ -1,10 +1,29 @@
 {
   "Metadata": {
-    "description": "Predict the 2026 FIFA World Cup bracket, share your picks, and export a PDF.",
+    "description": "Predict the 2026 FIFA World Cup bracket, share your picks, and export a shareable PNG.",
     "title": "2026 BRACKET"
   },
   "ConfirmacionMetadata": {
     "title": "Prediction saved | 2026 BRACKET"
+  },
+  "EntryMetadata": {
+    "description": "Public 2026 World Cup prediction — predicted winner: {winner}. Complete your bracket and compete for prizes.",
+    "title": "Entry {id} | Bracket FIFA 26"
+  },
+  "EntryNotFound": {
+    "body": "There is no saved prediction for that ID, or the link is wrong. Check the ID or complete your own bracket.",
+    "cta": "Go to bracket",
+    "title": "Entry not found"
+  },
+  "EntryPublic": {
+    "copyCta": "Copy link",
+    "copyFallback": "Copy this link:",
+    "copied": "Copied",
+    "ctaBracket": "Go to bracket",
+    "ctaBracketHint": "Complete your prediction and submit it to enter the prize draw.",
+    "shareHint": "When you share only the link to this page, many social apps will show your bracket card automatically.",
+    "subtitle": "Entry ID: {id}",
+    "title": "Public prediction"
   },
   "WelcomeMetadata": {
     "description": "Welcome to the 2026 FIFA World Cup bracket predictor by SierraLabs.",
@@ -116,13 +135,30 @@
     "thirdPlace": "3rd place: {code}",
     "pathSummary": "Path to the final",
     "semifinalPick": "Semi-final — your pick: {code}",
-    "downloadPdf": "Download full bracket (PDF)",
+    "downloadSharePng": "Download image for social (PNG, 1200×630)",
+    "shareCardFooter": "Bracket FIFA 26 · FIFA World Cup 2026",
+    "shareCardGroups": "Group stage (1st–4th)",
+    "shareCardKnockout": "Knockout picks",
+    "shareCardSubtitle": "Your prediction — share-ready card",
+    "shareCardTitle": "Bracket FIFA 26",
+    "shareExportError": "Could not generate the image. Try again.",
+    "shareFacebookPasteHint": "If the Facebook composer is empty, paste the message: we try to copy it to the clipboard (Ctrl/Cmd+V).",
+    "shareChallengeFull": "I locked in my FIFA World Cup 2026 bracket on Bracket FIFA 26. Entry: {entryId}. Think you can beat me? Complete yours and enter the prize draw.",
+    "shareChallengeTweet": "Think you can beat my 2026 World Cup bracket? Prizes when you submit your picks. Entry: {entryId}",
+    "shareChallengeWhatsapp": "🏆 I submitted my FIFA World Cup 2026 bracket on Bracket FIFA 26.\n\nEntry: {entryId}\n\nView the prediction card:\n{entryLink}\n\nComplete yours and enter the prize draw:\n{bracketLink}",
+    "shareExporting": "Generating image…",
+    "sharePhaseFinal": "Final",
+    "sharePhaseQf": "Quarter-finals",
+    "sharePhaseR16": "Round of 16",
+    "sharePhaseSf": "Semi-finals",
+    "shareNativeHint": "On many phones the PNG attaches when you share. Otherwise the link opens your public card so people can see your bracket; from there they can jump to the tournament flow to complete theirs and compete for prizes.",
+    "shareNativeTitle": "My prediction — Bracket FIFA 26",
+    "shareVs": "vs",
     "challengeTitle": "Challenge your friends",
-    "challengeBody": "Predictions are better shared. Share your bracket and see who knows the beautiful game best.",
+    "challengeBody": "Challenge your friends: have them complete the FIFA World Cup 2026 bracket on Bracket FIFA 26 and enter the prize draw when they submit.",
     "winnersNote": "Winners will be announced on July 20th, 2026 via registered email.",
     "anotherHint": "A new entry ID will be generated when you submit another prediction.",
     "anotherCta": "Make another prediction",
-    "shareText": "My 2026 World Cup bracket is locked in on 2026 BRACKET. Entry {entryId}. {origin}",
-    "instagramAlert": "Copy your bracket screenshot or link and share it from the Instagram app."
+    "instagramAlert": "1) Tap \"Download image for social\" and save the PNG.\n2) Open Instagram (story or post) and upload the image.\n3) In the caption, challenge friends to complete the Bracket FIFA 26 bracket for prizes."
   }
 }
