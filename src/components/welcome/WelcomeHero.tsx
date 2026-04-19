@@ -5,7 +5,7 @@ import { animate, createTimeline, stagger } from "animejs";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useTranslations } from "next-intl";
-import { useLayoutEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { Link } from "@/i18n/routing";
 import {
@@ -34,7 +34,7 @@ const READABILITY_SCRIM_OFF_UNTIL = 70;
 const READABILITY_SCRIM_FULL_BY = 108;
 /** Opacidad máxima del velo (0–1). */
 const READABILITY_SCRIM_MAX = 0.82;
-const FRAME_BASE = "/welcome_video";
+const FRAME_BASE = "/welcome_video/webp";
 const SIERRA_LOGO_SRC = "/sierra-labs-logo.png";
 
 function smoothstep01(t: number): number {
@@ -44,7 +44,7 @@ function smoothstep01(t: number): number {
 
 function frameUrl(index: number): string {
   const n = Math.min(WELCOME_FRAME_COUNT, Math.max(1, Math.round(index)));
-  return `${FRAME_BASE}/${String(n).padStart(3, "0")}.png`;
+  return `${FRAME_BASE}/${String(n).padStart(3, "0")}.webp`;
 }
 
 /** Carga paralela acotada para no saturar conexiones HTTP del navegador. */
@@ -118,6 +118,8 @@ async function preloadAllWelcomeFrames(
 const GRID_COLS = 10;
 const GRID_ROWS = 6;
 const PERF_COUNT = 6;
+/** Duración del scroll automático de la bienvenida (solo móvil al cargar). */
+const WELCOME_REPLAY_SCROLL_SEC = 4.75;
 
 export function WelcomeHero() {
   const scrollTrackRef = useRef<HTMLDivElement>(null);
@@ -126,12 +128,30 @@ export function WelcomeHero() {
   const frameRef = useRef(1);
   const imageCacheRef = useRef<Map<number, HTMLImageElement>>(new Map());
   const filmReadyNotified = useRef(false);
+  const welcomeFilmStRef = useRef<ScrollTrigger | null>(null);
+  const playReplayRef = useRef<(() => void) | null>(null);
+  const filmReadyRef = useRef(false);
   const t = useTranslations("Welcome");
   const heroTitle = t("heroTitle");
 
   const [frame, setFrame] = useState(1);
   const [filmReady, setFilmReady] = useState(false);
+  const [reducedMotion, setReducedMotion] = useState(false);
   const scrollRafRef = useRef(0);
+
+  filmReadyRef.current = filmReady;
+
+  useLayoutEffect(() => {
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const syncReduce = () => {
+      setReducedMotion(mq.matches);
+    };
+    syncReduce();
+    mq.addEventListener("change", syncReduce);
+    return () => {
+      mq.removeEventListener("change", syncReduce);
+    };
+  }, []);
 
   useLayoutEffect(() => {
     const prevRestoration = history.scrollRestoration;
@@ -152,6 +172,15 @@ export function WelcomeHero() {
       setFrame(1);
       requestAnimationFrame(() => {
         ScrollTrigger.refresh(true);
+        const mobile = window.matchMedia("(max-width: 767px)").matches;
+        const reduce = window.matchMedia(
+          "(prefers-reduced-motion: reduce)",
+        ).matches;
+        if (filmReadyRef.current && mobile && !reduce) {
+          window.setTimeout(() => {
+            playReplayRef.current?.();
+          }, 500);
+        }
       });
     };
 
@@ -162,6 +191,55 @@ export function WelcomeHero() {
       window.removeEventListener("pageshow", onPageShow);
     };
   }, []);
+
+  const scrollElementForSt = useCallback((st: ScrollTrigger): HTMLElement => {
+    if (st.scroller === window) {
+      return (document.scrollingElement ?? document.documentElement) as HTMLElement;
+    }
+    return st.scroller as HTMLElement;
+  }, []);
+
+  const playWelcomeScrollReplay = useCallback(() => {
+    const st = welcomeFilmStRef.current;
+    if (!st || reducedMotion) {
+      return;
+    }
+    const start = st.start;
+    const end = st.end;
+    if (!Number.isFinite(start) || !Number.isFinite(end)) {
+      return;
+    }
+
+    const scrollEl = scrollElementForSt(st);
+    gsap.killTweensOf(scrollEl);
+    scrollEl.scrollTop = start;
+    ScrollTrigger.update();
+
+    gsap.to(scrollEl, {
+      duration: WELCOME_REPLAY_SCROLL_SEC,
+      ease: "none",
+      onUpdate: () => {
+        ScrollTrigger.update();
+      },
+      scrollTop: end,
+    });
+  }, [reducedMotion, scrollElementForSt]);
+
+  useEffect(() => {
+    if (!filmReady || reducedMotion) {
+      return;
+    }
+    const mobileMq = window.matchMedia("(max-width: 767px)");
+    if (!mobileMq.matches) {
+      return;
+    }
+    const tid = window.setTimeout(() => {
+      playWelcomeScrollReplay();
+    }, 500);
+    return () => {
+      window.clearTimeout(tid);
+    };
+  }, [filmReady, reducedMotion, playWelcomeScrollReplay]);
 
   useLayoutEffect(() => {
     const cache = imageCacheRef.current;
@@ -547,6 +625,8 @@ export function WelcomeHero() {
         trigger: track,
       });
 
+      welcomeFilmStRef.current = st;
+
       ScrollTrigger.update();
 
       requestAnimationFrame(() => {
@@ -557,6 +637,7 @@ export function WelcomeHero() {
 
       return () => {
         cancelAnimationFrame(scrollRafRef.current);
+        welcomeFilmStRef.current = null;
         st.kill();
       };
     },
@@ -618,6 +699,8 @@ export function WelcomeHero() {
     },
     { scope: scrollTrackRef },
   );
+
+  playReplayRef.current = playWelcomeScrollReplay;
 
   const gridCells = Array.from(
     { length: GRID_COLS * GRID_ROWS },
