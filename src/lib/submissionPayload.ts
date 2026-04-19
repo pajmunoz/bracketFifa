@@ -192,6 +192,8 @@ export function parseBracketSubmissionBody(
   const predictedWinnerName = raw.predictedWinnerName;
   const submittedAt = raw.submittedAt;
   const whatsapp = raw.whatsapp;
+  const contestConsent = raw.contestConsent;
+  const marketingConsent = raw.marketingConsent;
   const groups = raw.groups;
   const knockout = parseKnockout(raw.knockout);
 
@@ -203,6 +205,8 @@ export function parseBracketSubmissionBody(
     typeof predictedWinnerName !== "string" ||
     typeof submittedAt !== "string" ||
     typeof whatsapp !== "string" ||
+    contestConsent !== true ||
+    typeof marketingConsent !== "boolean" ||
     knockout === null
   ) {
     return null;
@@ -250,10 +254,12 @@ export function parseBracketSubmissionBody(
   }
 
   return {
+    contestConsent: true,
     email: emailTrim,
     entryId: entryTrim,
     groups: groupOrders,
     knockout,
+    marketingConsent,
     name: name.trim().slice(0, 255),
     predictedWinnerCode: predictedWinnerCode.trim().slice(0, 8),
     predictedWinnerName: predictedWinnerName.trim().slice(0, 128),
@@ -296,11 +302,27 @@ export function rowToBracketSubmission(row: {
       ? row.submitted_at.toISOString()
       : String(row.submitted_at);
 
+  const scoresParsed =
+    row.scores_json !== undefined && row.scores_json !== null
+      ? parseJsonColumn(row.scores_json)
+      : {};
+  const scoresRec = isRecord(scoresParsed) ? scoresParsed : {};
+  const marketingConsent = scoresRec.marketingConsent === true;
+  const contestStored = scoresRec.contestConsent;
+  const legacyEmptyScores =
+    !("contestConsent" in scoresRec) &&
+    !("marketingConsent" in scoresRec) &&
+    Object.keys(scoresRec).length === 0;
+  const contestConsent =
+    contestStored === true || (contestStored !== false && legacyEmptyScores);
+
   const base = {
+    contestConsent,
     email: row.email,
     entryId: row.entry_id,
     groups,
     knockout: knockoutRaw,
+    marketingConsent,
     name: row.name,
     predictedWinnerCode: row.predicted_winner_code,
     predictedWinnerName: row.predicted_winner_name,

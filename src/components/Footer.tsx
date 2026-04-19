@@ -1,14 +1,15 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/routing";
+import { FIFA_SITE_URL, ROUTES } from "@/lib/routes";
 
 export function Footer() {
   const t = useTranslations("Footer");
-  const links = [
-    { href: "#", key: "rules" as const },
-    { href: "#", key: "privacy" as const },
-    { href: "#", key: "contact" as const },
-    { href: "#", key: "fifa" as const },
+  const internal = [
+    { href: ROUTES.rules, key: "rules" as const },
+    { href: ROUTES.privacy, key: "privacy" as const },
+    { href: ROUTES.support, key: "contact" as const },
   ];
 
   return (
@@ -18,15 +19,23 @@ export function Footer() {
           {t("title")}
         </div>
         <div className="flex flex-wrap justify-center gap-6">
-          {links.map(({ href, key }) => (
-            <a
+          {internal.map(({ href, key }) => (
+            <Link
               className="font-headline text-sm text-slate-500 transition-colors hover:text-emerald-400 hover:underline dark:text-slate-400"
               href={href}
               key={key}
             >
               {t(`links.${key}`)}
-            </a>
+            </Link>
           ))}
+          <a
+            className="font-headline text-sm text-slate-500 transition-colors hover:text-emerald-400 hover:underline dark:text-slate-400"
+            href={FIFA_SITE_URL}
+            rel="noopener noreferrer"
+            target="_blank"
+          >
+            {t("links.fifa")}
+          </a>
         </div>
         <div className="font-headline text-sm text-slate-500 dark:text-slate-400">
           {t("copyright")}

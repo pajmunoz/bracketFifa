@@ -25,6 +25,21 @@ export const R32_IDS = [
   "r32-15",
 ] as const;
 
+export const R16_IDS = [
+  "r16-0",
+  "r16-1",
+  "r16-2",
+  "r16-3",
+  "r16-4",
+  "r16-5",
+  "r16-6",
+  "r16-7",
+] as const;
+
+export const QF_IDS = ["qf-0", "qf-1", "qf-2", "qf-3"] as const;
+
+export const SF_IDS = ["sf-0", "sf-1"] as const;
+
 function firstPlace(groupId: string, orders: Record<string, string[]>): string {
   return orders[groupId]?.[0] ?? "";
 }

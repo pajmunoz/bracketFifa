@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS bracket_submissions (
   predicted_winner_name VARCHAR(128) NOT NULL,
   submitted_at DATETIME(3) NOT NULL,
   groups_json JSON NOT NULL,
-  scores_json JSON NOT NULL,
+  scores_json JSON NOT NULL COMMENT 'Consentimientos y metadatos (p. ej. contestConsent, marketingConsent)',
   knockout_json JSON NOT NULL,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (id),

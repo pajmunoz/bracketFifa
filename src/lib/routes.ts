@@ -6,6 +6,15 @@ export const ROUTES = {
   confirmacion: "/actividad/confirmacion",
   /** Panel del bracket (la ruta `/` redirige siempre a bienvenida). */
   home: "/bracket",
+  /** Política de privacidad y tratamiento de datos. */
+  privacy: "/privacidad",
+  /** Reglas del concurso y del torneo. */
+  rules: "/reglas",
+  /** Contacto y soporte. */
+  support: "/soporte",
   /** Pantalla de bienvenida animada; entrada por defecto desde `/`. */
   welcome: "/bienvenida",
 } as const;
+
+/** Enlace externo oficial (footer). */
+export const FIFA_SITE_URL = "https://www.fifa.com";

@@ -5,7 +5,8 @@ import { useTranslations } from "next-intl";
 import { useCallback, useState } from "react";
 import { useBracket } from "@/context/BracketContext";
 import { ROUTES } from "@/lib/routes";
-import { useRouter } from "@/i18n/routing";
+import { Link, useRouter } from "@/i18n/routing";
+import { clearBracketProgress } from "@/lib/bracketProgressPersistence";
 import { STORAGE_KEY } from "@/types/bracket";
 
 export function RegistrationSidebar() {
@@ -44,6 +45,7 @@ export function RegistrationSidebar() {
           return;
         }
         if (typeof window !== "undefined") {
+          clearBracketProgress();
           window.sessionStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
         }
         router.replace(ROUTES.confirmacion);
@@ -61,7 +63,7 @@ export function RegistrationSidebar() {
       className="sticky top-40 space-y-8 rounded-2xl bg-[#141b2b] p-8 text-on-secondary shadow-xl"
       id="register"
     >
-      <div className="mb-6 flex items-center gap-3">
+      <div className="mb-2 flex items-center gap-3">
         <span
           className="material-symbols-outlined text-4xl text-primary-container"
           style={{ fontVariationSettings: "'FILL' 1" }}
@@ -69,6 +71,19 @@ export function RegistrationSidebar() {
           stars
         </span>
         <h2 className="font-headline text-xl font-bold">{t("title")}</h2>
+      </div>
+      <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+        <div className="flex gap-3">
+          <span
+            aria-hidden
+            className="material-symbols-outlined shrink-0 text-primary-container"
+          >
+            verified_user
+          </span>
+          <p className="text-sm leading-relaxed text-tertiary-container">
+            {t("trustIntro")}
+          </p>
+        </div>
       </div>
       <form className="space-y-6" onSubmit={(e) => void handleSubmit(e)}>
         <div>
@@ -130,6 +145,52 @@ export function RegistrationSidebar() {
             />
           </div>
         </div>
+
+        <fieldset className="space-y-4 rounded-xl border border-white/10 bg-black/20 p-4">
+          <legend className="font-label px-1 text-xs font-bold tracking-widest text-primary-container uppercase">
+            {t("consentLegend")}
+          </legend>
+          <div className="flex gap-3">
+            <input
+              checked={form.contestConsent}
+              className="mt-1 h-4 w-4 shrink-0 cursor-pointer rounded border-slate-500 bg-slate-800 text-primary focus:ring-2 focus:ring-primary-container"
+              id="reg-consent-contest"
+              name="contestConsent"
+              type="checkbox"
+              onChange={(e) => setForm({ contestConsent: e.target.checked })}
+            />
+            <label
+              className="cursor-pointer text-sm leading-snug text-tertiary-container"
+              htmlFor="reg-consent-contest"
+            >
+              <span>{t("consentContestPrefix")}</span>{" "}
+              <Link
+                className="font-semibold text-primary underline decoration-primary/60 underline-offset-2 transition-colors hover:text-primary-container"
+                href={ROUTES.privacy}
+              >
+                {t("consentPrivacyLink")}
+              </Link>
+              <span>{t("consentContestSuffix")}</span>
+            </label>
+          </div>
+          <div className="flex gap-3 border-t border-white/5 pt-4">
+            <input
+              checked={form.marketingConsent}
+              className="mt-1 h-4 w-4 shrink-0 cursor-pointer rounded border-slate-500 bg-slate-800 text-primary focus:ring-2 focus:ring-primary-container"
+              id="reg-consent-marketing"
+              name="marketingConsent"
+              type="checkbox"
+              onChange={(e) => setForm({ marketingConsent: e.target.checked })}
+            />
+            <label
+              className="cursor-pointer text-sm leading-snug text-tertiary-container"
+              htmlFor="reg-consent-marketing"
+            >
+              {t("consentMarketing")}
+            </label>
+          </div>
+        </fieldset>
+
         <div className="border-t border-slate-700/50 pt-4">
           <p className="mb-2 text-center text-xs text-tertiary-container">
             {t("progress", { percent: progressPercent })}

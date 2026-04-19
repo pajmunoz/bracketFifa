@@ -33,16 +33,22 @@ export type KnockoutData = {
 };
 
 export type RegistrationForm = {
+  /** Consentimiento obligatorio: concurso y gestión de la participación. */
+  contestConsent: boolean;
   email: string;
+  /** Consentimiento opcional: comunicaciones comerciales de la empresa. */
+  marketingConsent: boolean;
   name: string;
   whatsapp: string;
 };
 
 export type BracketSubmission = {
+  contestConsent: boolean;
   email: string;
   entryId: string;
   groups: Record<string, string[]>;
   knockout: KnockoutData;
+  marketingConsent: boolean;
   name: string;
   predictedWinnerCode: string;
   predictedWinnerName: string;
@@ -51,3 +57,6 @@ export type BracketSubmission = {
 };
 
 export const STORAGE_KEY = "bracketFifaSubmission";
+
+/** Borrador del bracket (fase, picks, formulario) para recuperar al volver a /bracket. */
+export const BRACKET_PROGRESS_STORAGE_KEY = "bracketFifaBracketProgressV1";

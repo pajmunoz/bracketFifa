@@ -121,22 +121,28 @@
     "vs": "VS"
   },
   "Registration": {
-    "title": "Register prediction",
-    "nameLabel": "Full name",
-    "namePlaceholder": "e.g. Jane Doe",
+    "consentContestPrefix": "I have read the",
+    "consentContestSuffix": " and I authorise the processing of my data (name, email and phone) to enter this prize draw, manage my entry, validate my prediction and contact me if I win. Data will not be used for other purposes without a legal basis.",
+    "consentLegend": "Privacy and consent",
+    "consentMarketing": "I agree to receive commercial messages and proposals from SierraLabs by email. This is optional; I can withdraw consent at any time (for example by replying “unsubscribe” or writing to the support address).",
+    "consentPrivacyLink": "privacy policy",
     "emailLabel": "Email address",
     "emailPlaceholder": "jane@example.com",
-    "whatsappLabel": "WhatsApp",
-    "whatsappPrefix": "+1",
-    "whatsappPlaceholder": "(555) 000-0000",
+    "errorGeneric": "Could not reach the server. Please try again.",
+    "errorStatus": "Error {status}",
+    "footerHint": "Complete the bracket, accept the required contest consent and fill in your details to submit.",
+    "nameLabel": "Full name",
+    "namePlaceholder": "e.g. Jane Doe",
     "progress": "Progress: {percent}%",
+    "scoringBody": "10 points per correct winner, 25 for correct score, and 50 for the exact bracket path.",
+    "scoringTitle": "Scoring rules",
     "submit": "Submit prediction",
     "submitting": "Saving…",
-    "footerHint": "Complete the bracket (through third place) and your contact details to submit.",
-    "scoringTitle": "Scoring rules",
-    "scoringBody": "10 points per correct winner, 25 for correct score, and 50 for the exact bracket path.",
-    "errorGeneric": "Could not reach the server. Please try again.",
-    "errorStatus": "Error {status}"
+    "title": "Register prediction",
+    "trustIntro": "Your data are processed for limited, transparent purposes: the prize draw and, if you choose, company updates. We do not sell your data.",
+    "whatsappLabel": "WhatsApp",
+    "whatsappPlaceholder": "(555) 000-0000",
+    "whatsappPrefix": "+1"
   },
   "SuccessHeader": {
     "confirmation": "Confirmation"
@@ -170,5 +176,38 @@
     "subtitle": "Your prediction has been registered for the 2026 World Cup Final prize draw.",
     "thirdPlace": "3rd place: {code}",
     "winnersNote": "Winners will be announced on July 20th, 2026 via registered email."
+  },
+  "LegalCommon": {
+    "backToBracket": "Back to bracket"
+  },
+  "LegalPrivacy": {
+    "metaTitle": "Privacy | Bracket FIFA 26",
+    "title": "Privacy policy",
+    "updated": "Last updated: April 2026.",
+    "p1": "SierraLabs is the controller of the personal data you provide when you register your prediction in Bracket FIFA 26 (a promotional competition linked to the FIFA World Cup 2026). This policy supplements what you accept in the registration form.",
+    "p2": "Data we process: name, email address and WhatsApp number; your bracket picks linked to an entry ID; submission date and time. Contact data are stored on secure servers and transmitted over HTTPS.",
+    "p3": "Purposes: (a) run the prize draw and verify your prediction; (b) contact you if you win or for competition-related issues; (c) if you tick the optional box, send commercial communications and proposals from SierraLabs. We do not use automated decisions that produce legal effects for you.",
+    "p4": "Legal bases: performance of pre-contractual / contractual steps and the competition rules for (a) and (b); your explicit consent for marketing (c). Contest consent is required to participate; marketing consent is voluntary and can be withdrawn.",
+    "p5": "Retention: we keep competition data as long as needed to run the draw, handle queries and meet legal obligations (typically a few months after the competition ends, unless the law requires longer). Marketing records are kept until you withdraw consent or object.",
+    "p6": "Recipients: authorised SierraLabs staff and processors (e.g. hosting) under contract and instructions only. We do not sell your data.",
+    "p7": "Your GDPR rights: access, rectification, erasure, restriction, portability and objection, and to withdraw consent at any time without affecting prior lawful processing. Contact us via the support page email. You may also lodge a complaint with your local data protection authority.",
+    "p8": "Children: this service is not aimed at under-16s. If we learn we hold a child’s data, we will delete it."
+  },
+  "LegalRules": {
+    "metaTitle": "Tournament rules | Bracket FIFA 26",
+    "title": "Tournament and competition rules",
+    "p1": "Bracket FIFA 26 is a FIFA World Cup 2026 predictor for promotional purposes. Predictions are unofficial and do not affect FIFA or real match outcomes.",
+    "p2": "You must complete every bracket stage (through third place) and the registration form to enter the associated prize draw.",
+    "p3": "The scoring rules shown on the registration screen describe how a prediction may be scored against real results when the competition evaluation applies.",
+    "p4": "SierraLabs may change these rules or competition dates for organisational or legal reasons; we will publish updates on this page when needed.",
+    "p5": "Entry is free apart from your internet connection. Multiple submissions may be allowed as described in the app; each submission is a separate entry where stated."
+  },
+  "LegalSupport": {
+    "metaTitle": "Support | Bracket FIFA 26",
+    "title": "Support and contact",
+    "intro": "For questions about the competition, privacy or technical issues, email us and include your entry ID if you have already submitted a prediction.",
+    "emailLabel": "Support email",
+    "emailValue": "soporte@sierralabs.com",
+    "response": "We aim to reply within a reasonable time on business days."
   }
 }

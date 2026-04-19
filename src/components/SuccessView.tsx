@@ -17,6 +17,7 @@ import { entryShareAbsoluteUrl } from "@/lib/entrySharePath";
 import { ROUTES } from "@/lib/routes";
 import { routing, useRouter } from "@/i18n/routing";
 import type { BracketSubmission } from "@/types/bracket";
+import { clearBracketProgress } from "@/lib/bracketProgressPersistence";
 import { STORAGE_KEY } from "@/types/bracket";
 import { Footer } from "@/components/Footer";
 import { SuccessHeader } from "@/components/SuccessHeader";
@@ -93,6 +94,7 @@ export function SuccessView() {
 
   const handleAnotherPrediction = useCallback(() => {
     if (typeof window !== "undefined") {
+      clearBracketProgress();
       window.sessionStorage.removeItem(STORAGE_KEY);
     }
     router.replace(ROUTES.home);

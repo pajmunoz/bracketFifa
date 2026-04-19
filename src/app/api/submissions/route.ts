@@ -45,7 +45,10 @@ export async function POST(request: Request) {
         payload.predictedWinnerName,
         submittedAt,
         JSON.stringify(payload.groups),
-        JSON.stringify({}),
+        JSON.stringify({
+          contestConsent: payload.contestConsent,
+          marketingConsent: payload.marketingConsent,
+        }),
         JSON.stringify(payload.knockout),
       ],
     );

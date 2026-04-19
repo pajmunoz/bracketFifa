@@ -4,9 +4,14 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
+  useLayoutEffect,
   useMemo,
+  useRef,
   useState,
+  type Dispatch,
   type ReactNode,
+  type SetStateAction,
 } from "react";
 import { useLocale } from "next-intl";
 import {
@@ -16,7 +21,16 @@ import {
   TEAMS,
 } from "@/data/worldCup2026";
 import { teamDisplayName } from "@/lib/teamDisplayName";
-import { R32_IDS } from "@/lib/bracketKnockout";
+import {
+  QF_IDS,
+  R16_IDS,
+  R32_IDS,
+  SF_IDS,
+} from "@/lib/bracketKnockout";
+import {
+  readBracketProgress,
+  writeBracketProgress,
+} from "@/lib/bracketProgressPersistence";
 import type {
   BracketPhase,
   BracketSubmission,
@@ -26,19 +40,6 @@ import type {
 import { STORAGE_KEY } from "@/types/bracket";
 
 type GroupOrders = Record<string, string[]>;
-
-const R16_IDS = [
-  "r16-0",
-  "r16-1",
-  "r16-2",
-  "r16-3",
-  "r16-4",
-  "r16-5",
-  "r16-6",
-  "r16-7",
-] as const;
-const QF_IDS = ["qf-0", "qf-1", "qf-2", "qf-3"] as const;
-const SF_IDS = ["sf-0", "sf-1"] as const;
 
 function randomEntryId(): string {
   const n = Math.floor(1000 + Math.random() * 9000);
@@ -87,6 +88,7 @@ type BracketContextValue = {
   championId: string | null;
   formUnlocked: boolean;
   groupOrders: GroupOrders;
+  groupStepIndex: number;
   knockoutForPayload: KnockoutData;
   phase: BracketPhase;
   phaseIndex: number;
@@ -98,6 +100,7 @@ type BracketContextValue = {
   registrationUnlocked: boolean;
   setChampion: (teamId: string) => void;
   setForm: (patch: Partial<RegistrationForm>) => void;
+  setGroupStepIndex: Dispatch<SetStateAction<number>>;
   setQfWinner: (matchId: string, teamId: string) => void;
   setR16Winner: (matchId: string, teamId: string) => void;
   setR32Winner: (matchId: string, teamId: string) => void;
@@ -138,10 +141,75 @@ export function BracketProvider({ children }: { children: ReactNode }) {
   const [championId, setChampionId] = useState<string | null>(null);
   const [thirdPlaceId, setThirdPlaceId] = useState<string | null>(null);
   const [form, setFormState] = useState<RegistrationForm>({
+    contestConsent: false,
     email: "",
+    marketingConsent: false,
     name: "",
     whatsapp: "",
   });
+  const [groupStepIndex, setGroupStepIndex] = useState(0);
+
+  /** Evita escribir en localStorage en el mismo commit que la hidratación (estado aún vacío). */
+  const skipNextPersistWrite = useRef(false);
+
+  useLayoutEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+    const restored = readBracketProgress();
+    if (restored) {
+      skipNextPersistWrite.current = true;
+      setPhase(restored.phase);
+      setGroupOrders(restored.groupOrders);
+      setR32Winners(restored.r32Winners);
+      setR16Winners(restored.r16Winners);
+      setQfWinners(restored.qfWinners);
+      setSfWinners(restored.sfWinners);
+      setChampionId(restored.championId);
+      setThirdPlaceId(restored.thirdPlaceId);
+      setFormState(restored.form);
+      setGroupStepIndex(restored.groupStepIndex);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (phase !== "groups") {
+      setGroupStepIndex(0);
+    }
+  }, [phase]);
+
+  useLayoutEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+    if (skipNextPersistWrite.current) {
+      skipNextPersistWrite.current = false;
+      return;
+    }
+    writeBracketProgress({
+      championId,
+      form,
+      groupOrders,
+      groupStepIndex,
+      phase,
+      qfWinners,
+      r16Winners,
+      r32Winners,
+      sfWinners,
+      thirdPlaceId,
+    });
+  }, [
+    championId,
+    form,
+    groupOrders,
+    groupStepIndex,
+    phase,
+    qfWinners,
+    r16Winners,
+    r32Winners,
+    sfWinners,
+    thirdPlaceId,
+  ]);
 
   const setForm = useCallback((patch: Partial<RegistrationForm>) => {
     setFormState((prev) => ({ ...prev, ...patch }));
@@ -379,10 +447,12 @@ export function BracketProvider({ children }: { children: ReactNode }) {
   const prepareSubmission = useCallback((): BracketSubmission => {
     const champ = championId ? TEAMS[championId] : null;
     return {
+      contestConsent: form.contestConsent,
       email: form.email.trim(),
       entryId: randomEntryId(),
       groups: { ...groupOrders },
       knockout: knockoutForPayload,
+      marketingConsent: form.marketingConsent,
       name: form.name.trim(),
       predictedWinnerCode: champ?.code ?? "",
       predictedWinnerName: champ ? teamDisplayName(champ, locale) : "",
@@ -401,6 +471,7 @@ export function BracketProvider({ children }: { children: ReactNode }) {
 
   const canSubmit = useMemo(() => {
     const formFilled =
+      form.contestConsent === true &&
       form.name.trim() !== "" &&
       form.email.trim() !== "" &&
       form.whatsapp.trim() !== "" &&
@@ -417,6 +488,7 @@ export function BracketProvider({ children }: { children: ReactNode }) {
       form,
       formUnlocked,
       groupOrders,
+      groupStepIndex,
       knockoutForPayload,
       phase,
       phaseIndex,
@@ -428,6 +500,7 @@ export function BracketProvider({ children }: { children: ReactNode }) {
       registrationUnlocked,
       setChampion,
       setForm,
+      setGroupStepIndex,
       setQfWinner,
       setR16Winner,
       setR32Winner,
@@ -447,6 +520,7 @@ export function BracketProvider({ children }: { children: ReactNode }) {
       form,
       formUnlocked,
       groupOrders,
+      groupStepIndex,
       knockoutForPayload,
       phase,
       phaseIndex,
@@ -458,6 +532,7 @@ export function BracketProvider({ children }: { children: ReactNode }) {
       registrationUnlocked,
       setChampion,
       setForm,
+      setGroupStepIndex,
       setQfWinner,
       setR16Winner,
       setR32Winner,

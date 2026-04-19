@@ -121,22 +121,28 @@
     "vs": "VS"
   },
   "Registration": {
-    "title": "Registrar predicción",
-    "nameLabel": "Nombre completo",
-    "namePlaceholder": "ej. Juan Pérez",
+    "consentContestPrefix": "He leído la",
+    "consentContestSuffix": " y autorizo el tratamiento de mis datos (nombre, correo y teléfono) para participar en el sorteo de este concurso, gestionar mi inscripción, validar mi predicción y contactarme si resulto premiado. No se utilizarán para otros fines sin base legal.",
+    "consentLegend": "Privacidad y consentimiento",
+    "consentMarketing": "Acepto recibir comunicaciones comerciales y propuestas de SierraLabs por correo electrónico. Es opcional; puedo retirar mi consentimiento en cualquier momento (por ejemplo, respondiendo «baja» o escribiendo al correo de soporte).",
+    "consentPrivacyLink": "política de privacidad",
     "emailLabel": "Correo electrónico",
     "emailPlaceholder": "juan@ejemplo.com",
-    "whatsappLabel": "WhatsApp",
-    "whatsappPrefix": "+1",
-    "whatsappPlaceholder": "(555) 000-0000",
+    "errorGeneric": "No se pudo conectar con el servidor. Intenta de nuevo.",
+    "errorStatus": "Error {status}",
+    "footerHint": "Completa el bracket, marca el consentimiento obligatorio del concurso y rellena tus datos para enviar.",
+    "nameLabel": "Nombre completo",
+    "namePlaceholder": "ej. Juan Pérez",
     "progress": "Progreso: {percent}%",
+    "scoringBody": "10 puntos por ganador correcto, 25 por marcador correcto y 50 por la llave exacta.",
+    "scoringTitle": "Reglas de puntaje",
     "submit": "Finalizar predicción",
     "submitting": "Guardando…",
-    "footerHint": "Completa el bracket (hasta 3er lugar) y tus datos de contacto para enviar.",
-    "scoringTitle": "Reglas de puntaje",
-    "scoringBody": "10 puntos por ganador correcto, 25 por marcador correcto y 50 por la llave exacta.",
-    "errorGeneric": "No se pudo conectar con el servidor. Intenta de nuevo.",
-    "errorStatus": "Error {status}"
+    "title": "Registrar predicción",
+    "trustIntro": "Tus datos se tratan con fines limitados y transparentes: participar en el sorteo y, si lo eliges, recibir novedades de la empresa. No vendemos tus datos a terceros.",
+    "whatsappLabel": "WhatsApp",
+    "whatsappPlaceholder": "(555) 000-0000",
+    "whatsappPrefix": "+1"
   },
   "SuccessHeader": {
     "confirmation": "Confirmación"
@@ -170,5 +176,38 @@
     "subtitle": "Tu predicción quedó registrada para el sorteo del premio de la final del Mundial 2026.",
     "thirdPlace": "3.er lugar: {code}",
     "winnersNote": "Los ganadores se anunciarán el 20 de julio de 2026 por el correo registrado."
+  },
+  "LegalCommon": {
+    "backToBracket": "Volver al bracket"
+  },
+  "LegalPrivacy": {
+    "metaTitle": "Privacidad | Bracket FIFA 26",
+    "title": "Política de privacidad",
+    "updated": "Última actualización: abril de 2026.",
+    "p1": "SierraLabs es responsable del tratamiento de los datos personales que nos facilitas al registrar tu predicción en Bracket FIFA 26 (concurso promocional asociado al Mundial FIFA 2026). Esta información complementa lo que aceptas en el formulario de registro.",
+    "p2": "Datos que tratamos: nombre, correo electrónico y número de WhatsApp; contenido de tu bracket (grupos y eliminatoria) vinculado a un identificador de entrada; fecha y hora de envío. Los datos de contacto se conservan en servidores seguros y se transmiten cifrados (HTTPS).",
+    "p3": "Finalidades: (a) gestionar tu participación en el sorteo y comprobar la validez de la predicción; (b) contactarte si resultas ganador o para incidencias del concurso; (c) si marcas la casilla opcional, enviarte comunicaciones comerciales y propuestas de SierraLabs. No tomamos decisiones automatizadas que te afecten legalmente.",
+    "p4": "Base legal: ejecución de medidas precontractuales y contractual (participación en el concurso) para (a) y (b); consentimiento expreso para comunicaciones comerciales (c). El consentimiento del concurso es obligatorio para participar; el de marketing es voluntario y revocable.",
+    "p5": "Conservación: conservaremos los datos del concurso el tiempo necesario para gestionar el sorteo, resolver reclamaciones y cumplir obligaciones legales (normalmente hasta unos meses después del cierre del concurso, salvo obligación legal distinta). Los registros de marketing se conservan hasta que retires el consentimiento o te opongas.",
+    "p6": "Destinatarios: personal autorizado de SierraLabs y proveedores que actúen como encargados del tratamiento (p. ej. hosting) bajo contrato y solo con instrucciones documentadas. No vendemos tus datos.",
+    "p7": "Tus derechos (RGPD): acceso, rectificación, supresión, limitación, portabilidad y oposición, así como retirar el consentimiento en cualquier momento sin afectar a la licitud del tratamiento previo. Puedes ejercerlos escribiendo al correo indicado en la página de soporte. También puedes reclamar ante la autoridad de protección de datos de tu país.",
+    "p8": "Menores: este servicio no está dirigido a menores de 16 años. Si detectamos datos de menores, los eliminaremos."
+  },
+  "LegalRules": {
+    "metaTitle": "Reglas del torneo | Bracket FIFA 26",
+    "title": "Reglas del torneo y del concurso",
+    "p1": "Bracket FIFA 26 es un predictor del Mundial FIFA 2026 con fines promocionales. Las predicciones no tienen valor oficial frente a FIFA ni influyen en el resultado real del torneo.",
+    "p2": "Debes completar todas las fases del bracket (grupos hasta tercer lugar) y el formulario de registro para participar en el sorteo de premios asociado.",
+    "p3": "El sistema de puntos publicado en la pantalla de registro describe cómo se valorará la predicción frente a los resultados reales, si aplica en la fase de evaluación del concurso.",
+    "p4": "SierraLabs podrá modificar estas reglas o las fechas del concurso por motivos organizativos o legales; publicaremos cambios en esta página cuando sea necesario.",
+    "p5": "Participación gratuita salvo el coste de tu conexión a Internet. Un mismo usuario puede enviar más de una predicción si la aplicación lo permite; cada envío genera una entrada independiente según lo indicado en la app."
+  },
+  "LegalSupport": {
+    "metaTitle": "Soporte | Bracket FIFA 26",
+    "title": "Soporte y contacto",
+    "intro": "Para dudas sobre el concurso, la privacidad o incidencias técnicas, escríbenos indicando tu ID de entrada si ya enviaste una predicción.",
+    "emailLabel": "Correo de soporte",
+    "emailValue": "soporte@sierralabs.com",
+    "response": "Intentamos responder en un plazo razonable en días laborables."
   }
 }

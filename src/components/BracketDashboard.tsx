@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import { GROUPS, isValidGroupOrder } from "@/data/worldCup2026";
 import {
   buildFinalMatch,
@@ -47,12 +47,14 @@ export function BracketDashboard() {
     canAdvancePhase,
     championId,
     groupOrders,
+    groupStepIndex,
     phase,
     progressPercent,
     qfWinners,
     r16Winners,
     r32Winners,
     setChampion,
+    setGroupStepIndex,
     setQfWinner,
     setR16Winner,
     setR32Winner,
@@ -61,14 +63,6 @@ export function BracketDashboard() {
     sfWinners,
     thirdPlaceId,
   } = useBracket();
-
-  const [groupStepIndex, setGroupStepIndex] = useState(0);
-
-  useEffect(() => {
-    if (phase !== "groups") {
-      setGroupStepIndex(0);
-    }
-  }, [phase]);
 
   const currentGroupDef = GROUPS[groupStepIndex];
   const isCurrentGroupComplete = useMemo(() => {
