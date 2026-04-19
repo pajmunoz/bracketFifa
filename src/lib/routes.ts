@@ -16,5 +16,5 @@ export const ROUTES = {
   welcome: "/bienvenida",
 } as const;
 
-/** Enlace externo oficial (footer). */
-export const FIFA_SITE_URL = "https://www.fifa.com";
+/** Sitio de Sierra Labs (footer). */
+export const SIERRA_LABS_SITE_URL = "https://sierra-labs.digital/";

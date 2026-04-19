@@ -4,6 +4,7 @@ import { getMessages, getTranslations, setRequestLocale } from "next-intl/server
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
 import { Inter, Lexend, Space_Grotesk } from "next/font/google";
+import { BracketAudioExperience } from "@/components/BracketAudioExperience";
 import { routing } from "@/i18n/routing";
 
 const inter = Inter({
@@ -70,8 +71,9 @@ export default async function LocaleLayout({ children, params }: Props) {
           rel="stylesheet"
         />
       </head>
-      <body className="min-h-full overflow-x-hidden">
+      <body className="min-h-full overflow-x-hidden pb-[var(--bracket-audio-spacer,5.75rem)]">
         <NextIntlClientProvider messages={messages}>
+          <BracketAudioExperience />
           {children}
         </NextIntlClientProvider>
       </body>

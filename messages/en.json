@@ -3,6 +3,17 @@
     "description": "Predict the 2026 FIFA World Cup bracket, share your picks, and enter the prize draw.",
     "title": "2026 BRACKET"
   },
+  "BracketAudio": {
+    "artist": "SierraLabs AI generated music",
+    "badge": "Sierra Trax",
+    "expandDock": "Sierra Trax, compact view. Press the bar to see the track.",
+    "loadError": "Audio could not load. Check the URL or file in public/audio/.",
+    "mute": "Mute music",
+    "nowPlaying": "Now playing",
+    "tapToPlay": "Tap to enable site music",
+    "track": "Stand Back Up",
+    "unmute": "Unmute music"
+  },
   "ConfirmacionMetadata": {
     "title": "Prediction saved | 2026 BRACKET"
   },
@@ -48,9 +59,9 @@
     "copyright": "© 2026 SierraLabs. All rights reserved.",
     "links": {
       "contact": "Contact support",
-      "fifa": "FIFA official",
       "privacy": "Privacy policy",
-      "rules": "Tournament rules"
+      "rules": "Tournament rules",
+      "sierraLabs": "Sierra Labs"
     },
     "title": "2026 BRACKET CALCULATOR"
   },
@@ -207,7 +218,7 @@
     "title": "Support and contact",
     "intro": "For questions about the competition, privacy or technical issues, email us and include your entry ID if you have already submitted a prediction.",
     "emailLabel": "Support email",
-    "emailValue": "soporte@sierralabs.com",
+    "emailValue": "marketing@sierra-labs.digital",
     "response": "We aim to reply within a reasonable time on business days."
   }
 }
