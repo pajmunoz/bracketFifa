@@ -13,8 +13,6 @@ import { TEAMS } from "@/data/worldCup2026";
 import { teamDisplayName } from "@/lib/teamDisplayName";
 import { buildSFMatches } from "@/lib/bracketKnockout";
 import { SUCCESS_BALL_TEXTURE, SUCCESS_STADIUM_BG } from "@/data/successAssets";
-import { BracketShareCard } from "@/components/bracket-share/BracketShareCard";
-import { captureBracketShareCardAsPng } from "@/lib/downloadBracketSharePng";
 import { entryShareAbsoluteUrl } from "@/lib/entrySharePath";
 import { ROUTES } from "@/lib/routes";
 import { routing, useRouter } from "@/i18n/routing";
@@ -29,11 +27,8 @@ export function SuccessView() {
   const t = useTranslations("Success");
   const tVs = useTranslations("KnockoutRound");
   const [data, setData] = useState<BracketSubmission | null>(null);
-  const [downloadBusy, setDownloadBusy] = useState(false);
   const [entryLinkCopied, setEntryLinkCopied] = useState(false);
   const entryLinkCopiedTimer = useRef<number | null>(null);
-  const shareBlobRef = useRef<Blob | null>(null);
-  const shareCardRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const raw = window.sessionStorage.getItem(STORAGE_KEY);
@@ -54,58 +49,6 @@ export function SuccessView() {
       router.replace(ROUTES.home);
     }
   }, [router]);
-
-  useEffect(() => {
-    shareBlobRef.current = null;
-  }, [data?.entryId]);
-
-  const getShareBlob = useCallback(async () => {
-    if (shareBlobRef.current) {
-      return shareBlobRef.current;
-    }
-    if (!shareCardRef.current) {
-      throw new Error("missing share card");
-    }
-    const blob = await captureBracketShareCardAsPng(shareCardRef.current);
-    shareBlobRef.current = blob;
-    return blob;
-  }, []);
-
-  const handleSharePng = useCallback(async () => {
-    if (!data || !shareCardRef.current) {
-      return;
-    }
-    setDownloadBusy(true);
-    try {
-      const blob = await getShareBlob();
-      const objectUrl = URL.createObjectURL(blob);
-      const anchor = document.createElement("a");
-      anchor.download = "bracket-fifa-26-share.png";
-      anchor.href = objectUrl;
-      anchor.click();
-      URL.revokeObjectURL(objectUrl);
-
-      const baseOrigin = window.location.origin.replace(/\/$/, "");
-      const entryLink = entryShareAbsoluteUrl(baseOrigin, locale, data.entryId);
-      const bracketPath =
-        locale === routing.defaultLocale
-          ? ROUTES.home
-          : `/${locale}${ROUTES.home}`;
-      const bracketLink = `${baseOrigin}${bracketPath}`;
-      const clip = t("shareDownloadCaptionClipboard", {
-        bracketLink,
-        entryId: data.entryId,
-        entryLink,
-      });
-      void navigator.clipboard.writeText(clip).catch(() => {
-        /* permiso denegado o contexto no seguro */
-      });
-    } catch {
-      window.alert(t("shareExportError"));
-    } finally {
-      setDownloadBusy(false);
-    }
-  }, [data, getShareBlob, locale, t]);
 
   const handleCopyEntryLink = useCallback(() => {
     if (!data) {
@@ -174,12 +117,6 @@ export function SuccessView() {
 
   return (
     <div className="flex min-h-screen flex-col bg-surface font-body text-on-surface antialiased">
-      <div
-        aria-hidden
-        className="pointer-events-none fixed top-0 left-0 z-0 h-[630px] w-[1200px] max-w-none opacity-0"
-      >
-        <BracketShareCard ref={shareCardRef} data={data} />
-      </div>
       <SuccessHeader />
       <main className="relative z-10 min-h-screen pb-16 pt-24">
         <section className="relative min-h-[280px] overflow-hidden px-6 py-12 text-center lg:min-h-[320px] lg:py-20">
@@ -325,24 +262,10 @@ export function SuccessView() {
                   })}
                 </div>
               </div>
-              <div className="mt-8 flex flex-col gap-2">
+              <div className="mt-8">
                 <button
                   type="button"
-                  disabled={downloadBusy}
-                  className="group flex w-full items-center justify-center gap-2 rounded-xl border-2 border-primary py-4 font-headline font-bold text-primary transition-all hover:bg-primary/5 disabled:cursor-not-allowed disabled:opacity-60"
-                  onClick={() => {
-                    void handleSharePng();
-                  }}
-                >
-                  <span className="material-symbols-outlined transition-transform group-hover:scale-110">
-                    download
-                  </span>
-                  {downloadBusy ? t("shareExporting") : t("downloadSharePng")}
-                </button>
-                <button
-                  type="button"
-                  disabled={downloadBusy}
-                  className="group flex w-full items-center justify-center gap-2 rounded-xl border-2 border-outline-variant py-4 font-headline font-bold text-on-surface transition-all hover:bg-surface-container-high disabled:cursor-not-allowed disabled:opacity-60"
+                  className="group flex w-full items-center justify-center gap-2 rounded-xl border-2 border-primary bg-primary py-4 font-headline font-black text-on-primary transition-all hover:opacity-95 active:scale-[0.99]"
                   onClick={() => {
                     handleCopyEntryLink();
                   }}
@@ -350,7 +273,9 @@ export function SuccessView() {
                   <span className="material-symbols-outlined transition-transform group-hover:scale-110">
                     link
                   </span>
-                  {entryLinkCopied ? t("copyEntryLinkCopied") : t("copyEntryLinkButton")}
+                  {entryLinkCopied
+                    ? t("copyEntryLinkCopied")
+                    : t("shareResultButton")}
                 </button>
               </div>
             </div>
@@ -371,11 +296,6 @@ export function SuccessView() {
               <p className="mb-6 text-sm font-medium text-on-surface-variant">
                 {t("challengeBody")}
               </p>
-              <ol className="mb-6 list-decimal space-y-3 pl-5 text-sm leading-relaxed text-on-surface">
-                <li>{t("shareImageStep1")}</li>
-                <li>{t("shareImageStep2")}</li>
-                <li>{t("shareImageStep3")}</li>
-              </ol>
               <div className="mt-auto rounded-xl border border-primary/10 bg-primary/5 p-4">
                 <p className="text-xs leading-relaxed font-bold text-primary">
                   <span className="material-symbols-outlined mr-1 align-middle text-base">

@@ -11,7 +11,7 @@ function blobToDataUrl(blob: Blob): Promise<string> {
   });
 }
 
-/** Descarga cada `/api/flag/[cc]` y devuelve mapa cc → data URL (sin red en html-to-image). */
+/** Descarga cada `/api/flag/[cc]` y devuelve mapa cc → data URL para incrustar en la tarjeta. */
 export async function fetchFlagsAsDataUrls(
   codes: readonly string[],
 ): Promise<Record<string, string>> {

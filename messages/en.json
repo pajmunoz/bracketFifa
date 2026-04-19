@@ -1,6 +1,6 @@
 {
   "Metadata": {
-    "description": "Predict the 2026 FIFA World Cup bracket, share your picks, and export a shareable PNG.",
+    "description": "Predict the 2026 FIFA World Cup bracket, share your picks, and enter the prize draw.",
     "title": "2026 BRACKET"
   },
   "ConfirmacionMetadata": {
@@ -144,14 +144,12 @@
   "Success": {
     "anotherCta": "Make another prediction",
     "anotherHint": "A new entry ID will be generated when you submit another prediction.",
-    "challengeBody": "The buttons on the left give you a PNG for social posts and a ready-to-paste block with your public link (rich preview of your card) plus the link to the app.",
-    "challengeTitle": "Share in three steps",
+    "challengeBody": "Tap “Share your result” to copy a message with your public link (many apps show your bracket card as a rich preview) and the link to play the bracket in the app.",
+    "challengeTitle": "Share your prediction",
     "congrats": "CONGRATULATIONS!",
-    "copyEntryLinkButton": "Copy your entry link + caption for social",
     "copyEntryLinkClipboard": "Check out my 2026 World Cup prediction: open the link to see the full bracket card (link previews show the image). Entry: {entryId}. Complete your bracket in the app and enter the prize draw.\n\nPublic card:\n{entryLink}\n\nPlay the bracket (app):\n{bracketLink}",
     "copyEntryLinkCopied": "Copied to clipboard",
     "copyEntryLinkFallback": "Copy this block manually:",
-    "downloadSharePng": "Download image to share (PNG)",
     "entryId": "Entry ID: {id}",
     "loading": "Loading…",
     "pathSummary": "Path to the final",
@@ -162,17 +160,12 @@
     "shareCardKnockout": "Knockout picks",
     "shareCardSubtitle": "Your prediction — share-ready card",
     "shareCardTitle": "Bracket FIFA 26",
-    "shareDownloadCaptionClipboard": "🏆 I submitted my FIFA World Cup 2026 bracket on Bracket FIFA 26.\n\nEntry: {entryId}\n\nView the prediction card:\n{entryLink}\n\nComplete yours and enter the prize draw:\n{bracketLink}",
-    "shareExportError": "Could not generate the image. Try again.",
-    "shareExporting": "Generating image…",
-    "shareImageStep1": "Download the PNG (1200×630). After the download, when the browser allows it, we copy a message with links for you to paste next to the image.",
-    "shareImageStep2": "Open the app where your audience lives and start a story, post, or status; attach the image from your gallery.",
-    "shareImageStep3": "Paste that text or what you copied with \"Copy link…\"; add your entry ID or a hook if you like. Invite people to complete the bracket on Bracket FIFA 26 and join the prize draw.",
     "sharePhaseFinal": "Final",
     "sharePhaseQf": "Quarter-finals",
     "sharePhaseR16": "Round of 16",
     "sharePhaseR32": "Round of 32",
     "sharePhaseSf": "Semi-finals",
+    "shareResultButton": "Share your result",
     "shareVs": "vs",
     "subtitle": "Your prediction has been registered for the 2026 World Cup Final prize draw.",
     "thirdPlace": "3rd place: {code}",
