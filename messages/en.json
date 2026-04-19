@@ -88,6 +88,12 @@
     "bracketCompleteLine1": "Fill in the form on the right and tap",
     "bracketCompleteStrong": "Submit prediction",
     "bracketCompleteLine2": "to save and view your summary.",
+    "groupStepDotAria": "Go to {label}",
+    "groupStepLockedOther": "Complete every group",
+    "groupStepLockedOtherHint": "Use the dots above to jump to groups you still need to finish.",
+    "groupStepNeedPicks": "Pick 1st and 2nd",
+    "groupStepNext": "Next group",
+    "groupStepProgress": "Group {current} of {total}",
     "hintR16": "Pick a winner in all 8 matches to continue.",
     "hintR32": "Pick a winner in all 16 matches to continue.",
     "hintQf": "Pick a winner in all 4 matches.",
@@ -105,6 +111,12 @@
     "restTitle": "3rd & 4th (fixture order)"
   },
   "KnockoutRound": {
+    "knockoutStepDotAria": "Go to match {id}",
+    "knockoutStepLockedHint": "Use the dots above to jump to matches you still need to complete.",
+    "knockoutStepLockedRound": "Complete every match in this round",
+    "knockoutStepNeedPick": "Pick a winner",
+    "knockoutStepNextMatch": "Next match",
+    "knockoutStepProgress": "Match {current} of {total}",
     "match": "Match {id}",
     "vs": "VS"
   },

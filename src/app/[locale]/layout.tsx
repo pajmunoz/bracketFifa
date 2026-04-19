@@ -55,7 +55,6 @@ export default async function LocaleLayout({ children, params }: Props) {
     <html
       className={`${inter.variable} ${lexend.variable} ${spaceGrotesk.variable} h-full`}
       lang={locale}
-      style={{ height: "100%", overscrollBehaviorY: "none" }}
     >
       <head>
         {/* eslint-disable-next-line @next/next/no-page-custom-font -- Material Symbols not exposed via next/font */}
@@ -64,10 +63,7 @@ export default async function LocaleLayout({ children, params }: Props) {
           rel="stylesheet"
         />
       </head>
-      <body
-        className="min-h-full overflow-x-hidden"
-        style={{ overscrollBehaviorY: "none" }}
-      >
+      <body className="min-h-full overflow-x-hidden">
         <NextIntlClientProvider messages={messages}>
           {children}
         </NextIntlClientProvider>

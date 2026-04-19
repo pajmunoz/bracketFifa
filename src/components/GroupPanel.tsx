@@ -3,7 +3,7 @@
 import { useTranslations } from "next-intl";
 import { useLayoutEffect } from "react";
 import type { GroupDef } from "@/types/bracket";
-import { isValidGroupOrder, sanitizeGroupOrder, TEAMS } from "@/data/worldCup2026";
+import { isValidGroupOrder, TEAMS } from "@/data/worldCup2026";
 import { useBracket } from "@/context/BracketContext";
 import { TeamPickButton } from "@/components/TeamPickButton";
 import { buildGroupOrderFromPicks } from "@/lib/groupOrder";
@@ -15,19 +15,26 @@ type Props = {
 export function GroupPanel({ group }: Props) {
   const t = useTranslations("GroupPanel");
   const { groupOrders, setTeamOrder } = useBracket();
-  const rawOrder = groupOrders[group.id] ?? group.teamIds;
-  const order = sanitizeGroupOrder(rawOrder, group.teamIds);
+  const rawOrder = groupOrders[group.id];
+  const firstId = rawOrder?.[0] ?? "";
+  const secondId =
+    rawOrder && rawOrder.length >= 2 ? (rawOrder[1] ?? "") : "";
 
   useLayoutEffect(() => {
     const raw = groupOrders[group.id];
-    if (!raw || isValidGroupOrder(raw, group.teamIds)) {
+    if (raw === undefined) {
       return;
     }
-    setTeamOrder(group.id, [...group.teamIds]);
+    if (raw.length === 1) {
+      if (!group.teamIds.includes(raw[0]!)) {
+        setTeamOrder(group.id, []);
+      }
+      return;
+    }
+    if (!isValidGroupOrder(raw, group.teamIds)) {
+      setTeamOrder(group.id, []);
+    }
   }, [group.id, group.teamIds, groupOrders, setTeamOrder]);
-
-  const firstId = order[0] ?? "";
-  const secondId = order[1] ?? "";
 
   function pickFirst(tid: string) {
     if (tid === firstId) {
@@ -40,6 +47,10 @@ export function GroupPanel({ group }: Props) {
       );
       return;
     }
+    if (!secondId) {
+      setTeamOrder(group.id, [tid]);
+      return;
+    }
     setTeamOrder(
       group.id,
       buildGroupOrderFromPicks(group.teamIds, tid, secondId),
@@ -50,6 +61,9 @@ export function GroupPanel({ group }: Props) {
     if (tid === secondId) {
       return;
     }
+    if (!firstId) {
+      return;
+    }
     setTeamOrder(
       group.id,
       buildGroupOrderFromPicks(group.teamIds, firstId, tid),
@@ -57,7 +71,16 @@ export function GroupPanel({ group }: Props) {
   }
 
   const secondChoices = group.teamIds.filter((id) => id !== firstId);
-  const restCodes = order
+  const orderForRest =
+    firstId &&
+    secondId &&
+    rawOrder &&
+    isValidGroupOrder(rawOrder, group.teamIds)
+      ? rawOrder
+      : firstId && secondId
+        ? buildGroupOrderFromPicks(group.teamIds, firstId, secondId)
+        : [];
+  const restCodes = orderForRest
     .slice(2)
     .map((tid) => TEAMS[tid]?.code)
     .filter((code): code is string => Boolean(code));

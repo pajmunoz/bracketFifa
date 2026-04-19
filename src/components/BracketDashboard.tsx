@@ -1,8 +1,8 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useLayoutEffect, useMemo, useRef } from "react";
-import { GROUPS } from "@/data/worldCup2026";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { GROUPS, isValidGroupOrder } from "@/data/worldCup2026";
 import {
   buildFinalMatch,
   buildQFMatches,
@@ -17,16 +17,6 @@ import { GroupPanel } from "@/components/GroupPanel";
 import { KnockoutRound } from "@/components/KnockoutRound";
 import { NavBar } from "@/components/NavBar";
 import { RegistrationSidebar } from "@/components/RegistrationSidebar";
-
-function GroupsPhase() {
-  return (
-    <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
-      {GROUPS.map((g) => (
-        <GroupPanel key={g.id} group={g} />
-      ))}
-    </div>
-  );
-}
 
 function SidebarSlot() {
   const t = useTranslations("Bracket");
@@ -71,6 +61,46 @@ export function BracketDashboard() {
     sfWinners,
     thirdPlaceId,
   } = useBracket();
+
+  const [groupStepIndex, setGroupStepIndex] = useState(0);
+
+  useEffect(() => {
+    if (phase !== "groups") {
+      setGroupStepIndex(0);
+    }
+  }, [phase]);
+
+  const currentGroupDef = GROUPS[groupStepIndex];
+  const isCurrentGroupComplete = useMemo(() => {
+    if (!currentGroupDef) {
+      return false;
+    }
+    const raw = groupOrders[currentGroupDef.id];
+    return Boolean(raw && isValidGroupOrder(raw, currentGroupDef.teamIds));
+  }, [currentGroupDef, groupOrders]);
+
+  const isLastGroupStep = groupStepIndex >= GROUPS.length - 1;
+  const groupPrimaryDisabled =
+    !isCurrentGroupComplete ||
+    (isLastGroupStep && !canAdvancePhase);
+
+  const groupPrimaryLabel = useMemo(() => {
+    if (!isCurrentGroupComplete) {
+      return t("groupStepNeedPicks");
+    }
+    if (!isLastGroupStep) {
+      return t("groupStepNext");
+    }
+    if (canAdvancePhase) {
+      return t("next.groups");
+    }
+    return t("groupStepLockedOther");
+  }, [
+    canAdvancePhase,
+    isCurrentGroupComplete,
+    isLastGroupStep,
+    t,
+  ]);
 
   const r32Matches = useMemo(
     () => buildR32Fixtures(groupOrders),
@@ -135,43 +165,147 @@ export function BracketDashboard() {
         </div>
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
           <div className="space-y-10 lg:col-span-8">
-            {phase === "groups" ? <GroupsPhase /> : null}
+            {phase === "groups" && currentGroupDef ? (
+              <div className="w-full space-y-6" id="groups-stepper-top">
+                <div className="scroll-mt-40 w-full space-y-6 rounded-xl border border-outline-variant/15 bg-surface-container-low/40 p-4 sm:p-6">
+                  <div className="flex w-full flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    <p className="font-label text-center text-xs font-bold tracking-widest text-on-surface-variant uppercase sm:text-left">
+                      {t("groupStepProgress", {
+                        current: groupStepIndex + 1,
+                        total: GROUPS.length,
+                      })}
+                    </p>
+                    <nav
+                      aria-label={t("groupStepProgress", {
+                        current: groupStepIndex + 1,
+                        total: GROUPS.length,
+                      })}
+                      className="flex w-full flex-wrap justify-center gap-1.5 sm:w-auto sm:justify-end"
+                    >
+                      {GROUPS.map((g, i) => (
+                        <button
+                          key={g.id}
+                          aria-current={i === groupStepIndex ? "step" : undefined}
+                          aria-label={t("groupStepDotAria", { label: g.label })}
+                          className={`h-2.5 w-2.5 shrink-0 rounded-full transition-all ${
+                            i === groupStepIndex
+                              ? "scale-125 bg-primary ring-2 ring-primary/30"
+                              : "bg-outline-variant/45 hover:bg-outline-variant/75"
+                          }`}
+                          type="button"
+                          onClick={() => {
+                            setGroupStepIndex(i);
+                            requestAnimationFrame(() => {
+                              document
+                                .getElementById("groups-stepper-top")
+                                ?.scrollIntoView({
+                                  behavior: "smooth",
+                                  block: "start",
+                                });
+                            });
+                          }}
+                        />
+                      ))}
+                    </nav>
+                  </div>
+                  <GroupPanel group={currentGroupDef} />
+                  <button
+                    className={
+                      groupPrimaryDisabled
+                        ? "font-headline w-full cursor-not-allowed rounded-full bg-surface-container-high px-8 py-4 font-black text-on-surface-variant uppercase opacity-60"
+                        : "font-headline w-full rounded-full bg-primary px-8 py-4 font-black text-on-primary uppercase transition-all hover:opacity-95 active:scale-[0.99]"
+                    }
+                    disabled={groupPrimaryDisabled}
+                    type="button"
+                    onClick={() => {
+                      if (groupPrimaryDisabled) {
+                        return;
+                      }
+                      if (isLastGroupStep) {
+                        advancePhase();
+                        return;
+                      }
+                      setGroupStepIndex((prev) =>
+                        Math.min(GROUPS.length - 1, prev + 1),
+                      );
+                      requestAnimationFrame(() => {
+                        document
+                          .getElementById("groups-stepper-top")
+                          ?.scrollIntoView({
+                            behavior: "smooth",
+                            block: "start",
+                          });
+                      });
+                    }}
+                  >
+                    {groupPrimaryLabel}
+                  </button>
+                  {isLastGroupStep &&
+                  isCurrentGroupComplete &&
+                  !canAdvancePhase ? (
+                    <p className="text-center text-sm text-on-surface-variant">
+                      {t("groupStepLockedOtherHint")}
+                    </p>
+                  ) : null}
+                </div>
+              </div>
+            ) : null}
             {phase === "r32" ? (
               <KnockoutRound
+                advancePhase={advancePhase}
+                canAdvancePhase={canAdvancePhase}
+                incompleteHint={t("hintR32")}
                 label={t("knockout.r32")}
                 matches={r32Matches}
+                nextPhaseLabel={nextLabel}
                 picks={r32Winners}
                 onPick={setR32Winner}
               />
             ) : null}
             {phase === "r16" ? (
               <KnockoutRound
+                advancePhase={advancePhase}
+                canAdvancePhase={canAdvancePhase}
+                incompleteHint={t("hintR16")}
                 label={t("knockout.r16")}
                 matches={r16Matches}
+                nextPhaseLabel={nextLabel}
                 picks={r16Winners}
                 onPick={setR16Winner}
               />
             ) : null}
             {phase === "qf" ? (
               <KnockoutRound
+                advancePhase={advancePhase}
+                canAdvancePhase={canAdvancePhase}
+                incompleteHint={t("hintQf")}
                 label={t("knockout.qf")}
                 matches={qfMatches}
+                nextPhaseLabel={nextLabel}
                 picks={qfWinners}
                 onPick={setQfWinner}
               />
             ) : null}
             {phase === "sf" ? (
               <KnockoutRound
+                advancePhase={advancePhase}
+                canAdvancePhase={canAdvancePhase}
+                incompleteHint={t("hintSf")}
                 label={t("knockout.sf")}
                 matches={sfMatches}
+                nextPhaseLabel={nextLabel}
                 picks={sfWinners}
                 onPick={setSfWinner}
               />
             ) : null}
             {phase === "final" && finalMatch.homeId && finalMatch.awayId ? (
               <KnockoutRound
+                advancePhase={advancePhase}
+                canAdvancePhase={canAdvancePhase}
+                incompleteHint={t("hintFinal")}
                 label={t("knockout.final")}
                 matches={[finalMatch]}
+                nextPhaseLabel={nextLabel}
                 picks={{ final: championId ?? "" }}
                 onPick={(mid, tid) => {
                   if (mid === "final") {
@@ -184,8 +318,12 @@ export function BracketDashboard() {
             thirdMatch.homeId &&
             thirdMatch.awayId ? (
               <KnockoutRound
+                advancePhase={advancePhase}
+                canAdvancePhase={canAdvancePhase}
                 label={t("knockout.third")}
                 matches={[thirdMatch]}
+                nextPhaseLabel=""
+                pickReminder={t("hintThirdPick")}
                 picks={{ third: thirdPlaceId ?? "" }}
                 onPick={(mid, tid) => {
                   if (mid === "third") {
@@ -196,7 +334,10 @@ export function BracketDashboard() {
             ) : null}
 
             {phase === "third" && thirdPlaceId ? (
-              <div className="rounded-xl border border-primary/20 bg-primary/5 p-6 text-center">
+              <div
+                className="scroll-mt-40 rounded-xl border border-primary/20 bg-primary/5 p-6 text-center"
+                id="bracket-third-footer"
+              >
                 <p className="font-headline font-bold text-primary">
                   {t("bracketCompleteTitle")}
                 </p>
@@ -206,54 +347,6 @@ export function BracketDashboard() {
                   {t("bracketCompleteLine2")}
                 </p>
               </div>
-            ) : null}
-
-            {phase !== "third" ? (
-              <div className="flex flex-col items-stretch gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <button
-                  type="button"
-                  className={
-                    canAdvancePhase
-                      ? "font-headline rounded-full bg-primary px-8 py-4 font-black text-on-primary uppercase transition-all hover:opacity-95 active:scale-[0.99]"
-                      : "font-headline cursor-not-allowed rounded-full bg-surface-container-high px-8 py-4 font-black text-on-surface-variant uppercase opacity-60"
-                  }
-                  disabled={!canAdvancePhase}
-                  onClick={() => {
-                    advancePhase();
-                  }}
-                >
-                  {nextLabel}
-                </button>
-                {!canAdvancePhase && phase === "r32" ? (
-                  <p className="text-sm text-on-surface-variant">
-                    {t("hintR32")}
-                  </p>
-                ) : null}
-                {!canAdvancePhase && phase === "r16" ? (
-                  <p className="text-sm text-on-surface-variant">
-                    {t("hintR16")}
-                  </p>
-                ) : null}
-                {!canAdvancePhase && phase === "qf" ? (
-                  <p className="text-sm text-on-surface-variant">
-                    {t("hintQf")}
-                  </p>
-                ) : null}
-                {!canAdvancePhase && phase === "sf" ? (
-                  <p className="text-sm text-on-surface-variant">
-                    {t("hintSf")}
-                  </p>
-                ) : null}
-                {!canAdvancePhase && phase === "final" ? (
-                  <p className="text-sm text-on-surface-variant">
-                    {t("hintFinal")}
-                  </p>
-                ) : null}
-              </div>
-            ) : !thirdPlaceId ? (
-              <p className="text-sm text-on-surface-variant">
-                {t("hintThirdPick")}
-              </p>
             ) : null}
           </div>
           <div className="lg:col-span-4">

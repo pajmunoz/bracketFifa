@@ -130,6 +130,8 @@ export function WelcomeHero() {
   const filmReadyNotified = useRef(false);
   const welcomeFilmStRef = useRef<ScrollTrigger | null>(null);
   const playReplayRef = useRef<(() => void) | null>(null);
+  const welcomeProgressSyncRef = useRef<(p: number) => void>(() => {});
+  const replayProxyRef = useRef({ p: 0 });
   const filmReadyRef = useRef(false);
   const t = useTranslations("Welcome");
   const heroTitle = t("heroTitle");
@@ -204,6 +206,10 @@ export function WelcomeHero() {
     if (!st || reducedMotion) {
       return;
     }
+    const mobile = window.matchMedia("(max-width: 767px)").matches;
+    if (!mobile) {
+      return;
+    }
     const start = st.start;
     const end = st.end;
     if (!Number.isFinite(start) || !Number.isFinite(end)) {
@@ -211,17 +217,41 @@ export function WelcomeHero() {
     }
 
     const scrollEl = scrollElementForSt(st);
-    gsap.killTweensOf(scrollEl);
-    scrollEl.scrollTop = start;
-    ScrollTrigger.update();
+    const sync = welcomeProgressSyncRef.current;
+    const range = end - start;
 
-    gsap.to(scrollEl, {
+    gsap.killTweensOf(scrollEl);
+    gsap.killTweensOf(replayProxyRef.current);
+    replayProxyRef.current.p = 0;
+
+    st.disable();
+    scrollEl.scrollTop = start;
+    sync(0);
+
+    let restored = false;
+    const restore = () => {
+      if (restored) {
+        return;
+      }
+      restored = true;
+      st.enable();
+      scrollEl.scrollTop = end;
+      sync(1);
+      ScrollTrigger.refresh();
+      ScrollTrigger.update();
+    };
+
+    gsap.to(replayProxyRef.current, {
       duration: WELCOME_REPLAY_SCROLL_SEC,
       ease: "none",
+      onComplete: restore,
+      onKill: restore,
       onUpdate: () => {
-        ScrollTrigger.update();
+        const p = replayProxyRef.current.p;
+        scrollEl.scrollTop = start + p * range;
+        sync(p);
       },
-      scrollTop: end,
+      p: 1,
     });
   }, [reducedMotion, scrollElementForSt]);
 
@@ -559,65 +589,70 @@ export function WelcomeHero() {
         });
       };
 
+      const applyWelcomeFilmProgress = (progress: number) => {
+        const p = Math.min(1, Math.max(0, progress));
+        const nextFrame = 1 + Math.round(p * (WELCOME_FRAME_COUNT - 1));
+        const clamped = Math.min(
+          WELCOME_FRAME_COUNT,
+          Math.max(1, nextFrame),
+        );
+        setFrame(clamped);
+        if (frameScale) {
+          gsap.set(frameScale, { scale: 1 + p * 0.08 });
+        }
+        if (progressInner) {
+          gsap.set(progressInner, {
+            scaleX: Math.max(0.004, p),
+            transformOrigin: "left center",
+          });
+        }
+
+        const logo = track.querySelector<HTMLElement>(".welcome-intro-logo");
+        const presenta = track.querySelector<HTMLElement>(
+          ".welcome-intro-presenta",
+        );
+        if (logo) {
+          const logoSpan = Math.max(1, INTRO_LOGO_END - 1);
+          const logoP = Math.min(
+            1,
+            Math.max(0, (clamped - 1) / logoSpan),
+          );
+          gsap.set(logo, {
+            autoAlpha: logoP,
+            y: (1 - logoP) * -56,
+          });
+        }
+        if (presenta) {
+          if (clamped <= INTRO_PRESENTA_START) {
+            gsap.set(presenta, { autoAlpha: 0, y: 18 });
+          } else {
+            const span = Math.max(
+              1,
+              INTRO_PRESENTA_END - INTRO_PRESENTA_START,
+            );
+            const presP = Math.min(
+              1,
+              Math.max(0, (clamped - INTRO_PRESENTA_START) / span),
+            );
+            gsap.set(presenta, {
+              autoAlpha: presP,
+              y: (1 - presP) * 16,
+            });
+          }
+        }
+
+        applyReadabilityScrim(clamped);
+        applyHeroForFrame(clamped);
+      };
+
+      welcomeProgressSyncRef.current = applyWelcomeFilmProgress;
+
       const st = ScrollTrigger.create({
         end: "bottom bottom",
         onUpdate: (self) => {
           cancelAnimationFrame(scrollRafRef.current);
           scrollRafRef.current = requestAnimationFrame(() => {
-            const p = self.progress;
-            const nextFrame =
-              1 + Math.round(p * (WELCOME_FRAME_COUNT - 1));
-            const clamped = Math.min(
-              WELCOME_FRAME_COUNT,
-              Math.max(1, nextFrame),
-            );
-            setFrame(clamped);
-            if (frameScale) {
-              gsap.set(frameScale, { scale: 1 + p * 0.08 });
-            }
-            if (progressInner) {
-              gsap.set(progressInner, {
-                scaleX: Math.max(0.004, p),
-                transformOrigin: "left center",
-              });
-            }
-
-            const logo = track.querySelector<HTMLElement>(".welcome-intro-logo");
-            const presenta = track.querySelector<HTMLElement>(
-              ".welcome-intro-presenta",
-            );
-            if (logo) {
-              const logoSpan = Math.max(1, INTRO_LOGO_END - 1);
-              const logoP = Math.min(
-                1,
-                Math.max(0, (clamped - 1) / logoSpan),
-              );
-              gsap.set(logo, {
-                autoAlpha: logoP,
-                y: (1 - logoP) * -56,
-              });
-            }
-            if (presenta) {
-              if (clamped <= INTRO_PRESENTA_START) {
-                gsap.set(presenta, { autoAlpha: 0, y: 18 });
-              } else {
-                const span = Math.max(
-                  1,
-                  INTRO_PRESENTA_END - INTRO_PRESENTA_START,
-                );
-                const presP = Math.min(
-                  1,
-                  Math.max(0, (clamped - INTRO_PRESENTA_START) / span),
-                );
-                gsap.set(presenta, {
-                  autoAlpha: presP,
-                  y: (1 - presP) * 16,
-                });
-              }
-            }
-
-            applyReadabilityScrim(clamped);
-            applyHeroForFrame(clamped);
+            welcomeProgressSyncRef.current(self.progress);
           });
         },
         scrub: 0.75,
@@ -637,6 +672,13 @@ export function WelcomeHero() {
 
       return () => {
         cancelAnimationFrame(scrollRafRef.current);
+        gsap.killTweensOf(replayProxyRef.current);
+        welcomeProgressSyncRef.current = () => {};
+        try {
+          st.enable();
+        } catch {
+          /* noop */
+        }
         welcomeFilmStRef.current = null;
         st.kill();
       };

@@ -88,6 +88,12 @@
     "bracketCompleteLine1": "Completa el formulario a la derecha y pulsa",
     "bracketCompleteStrong": "Finalizar predicción",
     "bracketCompleteLine2": "para guardar y ver tu resumen.",
+    "groupStepDotAria": "Ir a {label}",
+    "groupStepLockedOther": "Completa todos los grupos",
+    "groupStepLockedOtherHint": "Usa los puntos de arriba para ir a otro grupo o completar los que faltan.",
+    "groupStepNeedPicks": "Elige 1.º y 2.º",
+    "groupStepNext": "Siguiente grupo",
+    "groupStepProgress": "Grupo {current} de {total}",
     "hintR16": "Elige ganador en los 8 partidos para continuar.",
     "hintR32": "Elige ganador en los 16 partidos para continuar.",
     "hintQf": "Elige ganador en los 4 partidos.",
@@ -105,6 +111,12 @@
     "restTitle": "3.º y 4.º (orden del fixture)"
   },
   "KnockoutRound": {
+    "knockoutStepDotAria": "Ir al partido {id}",
+    "knockoutStepLockedHint": "Usa los puntos de arriba para ir a los partidos que aún faltan.",
+    "knockoutStepLockedRound": "Completa todos los partidos de esta ronda",
+    "knockoutStepNeedPick": "Elige un ganador",
+    "knockoutStepNextMatch": "Siguiente partido",
+    "knockoutStepProgress": "Partido {current} de {total}",
     "match": "Partido {id}",
     "vs": "VS"
   },

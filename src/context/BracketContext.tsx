@@ -9,7 +9,12 @@ import {
   type ReactNode,
 } from "react";
 import { useLocale } from "next-intl";
-import { GROUPS, sanitizeGroupOrder, TEAMS } from "@/data/worldCup2026";
+import {
+  GROUPS,
+  isValidGroupOrder,
+  sanitizeGroupOrder,
+  TEAMS,
+} from "@/data/worldCup2026";
 import { teamDisplayName } from "@/lib/teamDisplayName";
 import { R32_IDS } from "@/lib/bracketKnockout";
 import type {
@@ -34,14 +39,6 @@ const R16_IDS = [
 ] as const;
 const QF_IDS = ["qf-0", "qf-1", "qf-2", "qf-3"] as const;
 const SF_IDS = ["sf-0", "sf-1"] as const;
-
-function initialOrders(): GroupOrders {
-  const o: GroupOrders = {};
-  for (const g of GROUPS) {
-    o[g.id] = sanitizeGroupOrder([...g.teamIds], g.teamIds);
-  }
-  return o;
-}
 
 function randomEntryId(): string {
   const n = Math.floor(1000 + Math.random() * 9000);
@@ -126,15 +123,10 @@ const PHASE_ORDER: BracketPhase[] = [
   "third",
 ];
 
-/** Orden inicial de grupos (solo lectura) para medir personalización en la barra de progreso. */
-const SNAPSHOT_GROUP_ORDERS: GroupOrders = initialOrders();
-
 export function BracketProvider({ children }: { children: ReactNode }) {
   const locale = useLocale();
   const [phase, setPhase] = useState<BracketPhase>("groups");
-  const [groupOrders, setGroupOrders] = useState<GroupOrders>(() => ({
-    ...SNAPSHOT_GROUP_ORDERS,
-  }));
+  const [groupOrders, setGroupOrders] = useState<GroupOrders>(() => ({}));
   const [r32Winners, setR32Winners] = useState<Record<string, string>>(
     emptyR32,
   );
@@ -158,6 +150,24 @@ export function BracketProvider({ children }: { children: ReactNode }) {
   const setTeamOrder = useCallback((groupId: string, teamIds: string[]) => {
     const g = GROUPS.find((gr) => gr.id === groupId);
     const base = g?.teamIds ?? teamIds;
+    if (teamIds.length === 0) {
+      setGroupOrders((prev) => {
+        const { [groupId]: _, ...rest } = prev;
+        return rest;
+      });
+      return;
+    }
+    if (teamIds.length === 1) {
+      const only = teamIds[0];
+      if (!only || !base.includes(only)) {
+        return;
+      }
+      setGroupOrders((prev) => ({ ...prev, [groupId]: [only] }));
+      return;
+    }
+    if (teamIds.length !== 4 || !isValidGroupOrder(teamIds, base)) {
+      return;
+    }
     const normalized = sanitizeGroupOrder(teamIds, base);
     setGroupOrders((prev) => ({ ...prev, [groupId]: normalized }));
   }, []);
@@ -216,9 +226,15 @@ export function BracketProvider({ children }: { children: ReactNode }) {
     [thirdPlaceId],
   );
 
+  const groupsComplete = useMemo(
+    () =>
+      GROUPS.every((gr) => isValidGroupOrder(groupOrders[gr.id], gr.teamIds)),
+    [groupOrders],
+  );
+
   const canAdvancePhase = useMemo(() => {
     if (phase === "groups") {
-      return true;
+      return groupsComplete;
     }
     if (phase === "r32") {
       return r32Complete;
@@ -241,6 +257,7 @@ export function BracketProvider({ children }: { children: ReactNode }) {
     return false;
   }, [
     phase,
+    groupsComplete,
     r16Complete,
     r32Complete,
     qfComplete,
@@ -264,21 +281,20 @@ export function BracketProvider({ children }: { children: ReactNode }) {
 
   const phaseIndex = PHASE_ORDER.indexOf(phase);
 
-  const customizedGroupCount = useMemo(() => {
-    return GROUPS.filter(
-      (g) =>
-        JSON.stringify(groupOrders[g.id]) !==
-        JSON.stringify(SNAPSHOT_GROUP_ORDERS[g.id]),
-    ).length;
-  }, [groupOrders]);
+  const completedGroupCount = useMemo(
+    () =>
+      GROUPS.filter((gr) =>
+        isValidGroupOrder(groupOrders[gr.id], gr.teamIds),
+      ).length,
+    [groupOrders],
+  );
 
   const progressPercent = useMemo(() => {
     const idx = phaseIndex;
     let p = 0;
 
     if (idx === 0) {
-      p +=
-        (customizedGroupCount / GROUPS.length) * W_GROUPS;
+      p += (completedGroupCount / GROUPS.length) * W_GROUPS;
     } else {
       p += W_GROUPS;
     }
@@ -319,7 +335,7 @@ export function BracketProvider({ children }: { children: ReactNode }) {
 
     return Math.min(100, Math.round(p));
   }, [
-    customizedGroupCount,
+    completedGroupCount,
     finalComplete,
     phaseIndex,
     qfWinners,
