@@ -1,6 +1,6 @@
 "use client";
 
-import { forwardRef } from "react";
+import { forwardRef, useEffect, useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { GROUPS, TEAMS } from "@/data/worldCup2026";
 import {
@@ -10,7 +10,15 @@ import {
   buildR32Fixtures,
   buildSFMatches,
 } from "@/lib/bracketKnockout";
+import { flagCcFromFlagUrl } from "@/lib/flagCc";
+import { fetchFlagsAsDataUrls } from "@/lib/fetchFlagDataUrls";
 import { flagImageProxyPath } from "@/lib/flagProxyPath";
+import {
+  inlineFlagsCacheCoversCodes,
+  readInlineFlagsCache,
+  writeInlineFlagsCache,
+} from "@/lib/inlineFlagsSessionCache";
+import { collectSubmissionFlagCodes } from "@/lib/submissionFlagCodes";
 import { teamDisplayName } from "@/lib/teamDisplayName";
 import type { BracketSubmission } from "@/types/bracket";
 import styles from "@/components/bracket-share/BracketShareCard.module.css";
@@ -21,21 +29,28 @@ type BracketShareCardProps = {
 
 function ShareFlag({
   className,
+  inlineByCc,
   team,
 }: {
   className: string;
+  inlineByCc: Record<string, string>;
   team: { code: string; flagUrl: string; name: string };
 }) {
+  const cc = flagCcFromFlagUrl(team.flagUrl);
+  const inlined = cc ? inlineByCc[cc] : undefined;
+  const src =
+    inlined && inlined.length > 0 ? inlined : flagImageProxyPath(team.flagUrl);
+  const isData = src.startsWith("data:");
   return (
-    // eslint-disable-next-line @next/next/no-img-element -- CORS + html-to-image requiere <img>
+    // eslint-disable-next-line @next/next/no-img-element -- data URL / proxy para captura
     <img
       alt=""
       className={className}
-      crossOrigin="anonymous"
+      crossOrigin={isData ? undefined : "anonymous"}
       decoding="async"
       fetchPriority="high"
       loading="eager"
-      src={flagImageProxyPath(team.flagUrl)}
+      src={src}
     />
   );
 }
@@ -44,6 +59,45 @@ export const BracketShareCard = forwardRef<HTMLDivElement, BracketShareCardProps
   function BracketShareCard({ data }, ref) {
     const locale = useLocale();
     const t = useTranslations("Success");
+    const [inlineByCc, setInlineByCc] = useState<Record<string, string>>({});
+
+    const codes = useMemo(() => collectSubmissionFlagCodes(data), [data]);
+
+    const flagsInlineComplete =
+      codes.length === 0 ||
+      codes.every((cc) => {
+        const v = inlineByCc[cc];
+        return typeof v === "string" && v.startsWith("data:");
+      });
+
+    useEffect(() => {
+      let cancelled = false;
+      const list = collectSubmissionFlagCodes(data);
+      if (list.length === 0) {
+        setInlineByCc({});
+        return;
+      }
+
+      const cached = readInlineFlagsCache(data.entryId);
+      if (cached && inlineFlagsCacheCoversCodes(cached, list)) {
+        setInlineByCc(cached);
+        return;
+      }
+
+      void (async () => {
+        const fresh = await fetchFlagsAsDataUrls(list);
+        if (cancelled) {
+          return;
+        }
+        setInlineByCc(fresh);
+        writeInlineFlagsCache(data.entryId, fresh);
+      })();
+
+      return () => {
+        cancelled = true;
+      };
+    }, [data]);
+
     const k = data.knockout;
     const r32Fixtures = buildR32Fixtures(data.groups);
     const r16Fixtures = buildR16FromR32Results(k.r32);
@@ -73,7 +127,11 @@ export const BracketShareCard = forwardRef<HTMLDivElement, BracketShareCardProps
       .filter((team): team is NonNullable<typeof team> => Boolean(team));
 
     return (
-      <div ref={ref} className={styles.root}>
+      <div
+        ref={ref}
+        className={styles.root}
+        data-flags-inline={flagsInlineComplete ? "complete" : "pending"}
+      >
         <header className={styles.header}>
           <div className={styles.titleBlock}>
             <h1 className={styles.title}>{t("shareCardTitle")}</h1>
@@ -89,6 +147,7 @@ export const BracketShareCard = forwardRef<HTMLDivElement, BracketShareCardProps
             <span className={styles.championLabel}>{t("predictedWinner")}</span>
             <ShareFlag
               className={styles.championFlag}
+              inlineByCc={inlineByCc}
               team={champion}
             />
             <p className={styles.championName}>
@@ -107,7 +166,11 @@ export const BracketShareCard = forwardRef<HTMLDivElement, BracketShareCardProps
               <div className={styles.flagRow}>
                 {r32WinnerTeams.map((team, i) => (
                   <span className={styles.flagSlot} key={`${team.id}-r32-${i}`}>
-                    <ShareFlag className={styles.imgWin} team={team} />
+                    <ShareFlag
+                      className={styles.imgWin}
+                      inlineByCc={inlineByCc}
+                      team={team}
+                    />
                   </span>
                 ))}
               </div>
@@ -118,7 +181,11 @@ export const BracketShareCard = forwardRef<HTMLDivElement, BracketShareCardProps
               <div className={styles.flagRow}>
                 {r16WinnerTeams.map((team, i) => (
                   <span className={styles.flagSlot} key={`${team.id}-r16-${i}`}>
-                    <ShareFlag className={styles.imgWin} team={team} />
+                    <ShareFlag
+                      className={styles.imgWin}
+                      inlineByCc={inlineByCc}
+                      team={team}
+                    />
                   </span>
                 ))}
               </div>
@@ -129,7 +196,11 @@ export const BracketShareCard = forwardRef<HTMLDivElement, BracketShareCardProps
               <div className={styles.flagRow}>
                 {qfWinnerTeams.map((team) => (
                   <span className={styles.flagSlot} key={team.id}>
-                    <ShareFlag className={styles.imgWin} team={team} />
+                    <ShareFlag
+                      className={styles.imgWin}
+                      inlineByCc={inlineByCc}
+                      team={team}
+                    />
                   </span>
                 ))}
               </div>
@@ -140,7 +211,11 @@ export const BracketShareCard = forwardRef<HTMLDivElement, BracketShareCardProps
               <div className={styles.flagRow}>
                 {sfWinnerTeams.map((team) => (
                   <span className={styles.flagSlot} key={team.id}>
-                    <ShareFlag className={styles.imgWin} team={team} />
+                    <ShareFlag
+                      className={styles.imgWin}
+                      inlineByCc={inlineByCc}
+                      team={team}
+                    />
                   </span>
                 ))}
               </div>
@@ -157,7 +232,11 @@ export const BracketShareCard = forwardRef<HTMLDivElement, BracketShareCardProps
                         : `${styles.flagSlot} ${styles.flagSlotMuted}`
                     }
                   >
-                    <ShareFlag className={styles.imgMd} team={homeFinal} />
+                    <ShareFlag
+                      className={styles.imgMd}
+                      inlineByCc={inlineByCc}
+                      team={homeFinal}
+                    />
                   </span>
                 ) : null}
                 <span className={styles.vsTiny}>{t("shareVs")}</span>
@@ -169,7 +248,11 @@ export const BracketShareCard = forwardRef<HTMLDivElement, BracketShareCardProps
                         : `${styles.flagSlot} ${styles.flagSlotMuted}`
                     }
                   >
-                    <ShareFlag className={styles.imgMd} team={awayFinal} />
+                    <ShareFlag
+                      className={styles.imgMd}
+                      inlineByCc={inlineByCc}
+                      team={awayFinal}
+                    />
                   </span>
                 ) : null}
               </div>
@@ -196,7 +279,11 @@ export const BracketShareCard = forwardRef<HTMLDivElement, BracketShareCardProps
                       }
                       return (
                         <span className={styles.groupFlagWrap} key={tid}>
-                          <ShareFlag className={styles.imgSm} team={team} />
+                          <ShareFlag
+                            className={styles.imgSm}
+                            inlineByCc={inlineByCc}
+                            team={team}
+                          />
                         </span>
                       );
                     })}

@@ -25,6 +25,19 @@ function raf2(): Promise<void> {
   });
 }
 
+/** Espera a que la tarjeta haya sustituido banderas por data URLs (evita captura vacía en móvil). */
+async function waitForFlagsInlineReady(element: HTMLElement): Promise<void> {
+  const deadline = Date.now() + 25_000;
+  while (Date.now() < deadline) {
+    if (element.getAttribute("data-flags-inline") === "complete") {
+      return;
+    }
+    await new Promise<void>((r) => {
+      window.setTimeout(r, 40);
+    });
+  }
+}
+
 async function waitForShareImages(element: HTMLElement): Promise<void> {
   const images = [...element.querySelectorAll("img")];
   await Promise.all(
@@ -57,6 +70,7 @@ async function waitForShareImages(element: HTMLElement): Promise<void> {
 export async function captureBracketShareCardAsPng(
   element: HTMLElement,
 ): Promise<Blob> {
+  await waitForFlagsInlineReady(element);
   await waitForShareImages(element);
   const blob = await toBlob(element, { ...captureOptions });
   if (!blob) {
