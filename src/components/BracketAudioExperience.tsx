@@ -41,9 +41,22 @@ function prefersReducedMotion(): boolean {
   );
 }
 
+/** Vista pública `/entrada/[entryId]` (con o sin prefijo de locale, p. ej. `/en/entrada/…`). */
+function isBracketEntrySharePathname(pathname: string): boolean {
+  const path = pathname.split("?")[0].split("#")[0];
+  const parts = path.split("/").filter(Boolean);
+  for (let i = 0; i < parts.length - 1; i += 1) {
+    if (parts[i] === "entrada" && parts[i + 1] !== "") {
+      return true;
+    }
+  }
+  return false;
+}
+
 export function BracketAudioExperience() {
   const t = useTranslations("BracketAudio");
   const pathname = usePathname();
+  const isEntryShareRoute = isBracketEntrySharePathname(pathname);
   const audioRef = useRef<HTMLAudioElement>(null);
   const dockRef = useRef<HTMLDivElement>(null);
   const shellRef = useRef<HTMLDivElement>(null);
@@ -91,12 +104,18 @@ export function BracketAudioExperience() {
   }, [muted]);
 
   useEffect(() => {
+    if (isEntryShareRoute) {
+      document.documentElement.style.setProperty("--bracket-audio-spacer", "0px");
+      return () => {
+        document.documentElement.style.removeProperty("--bracket-audio-spacer");
+      };
+    }
     const spacer = docked ? SPACER_COLLAPSED : SPACER_EXPANDED;
     document.documentElement.style.setProperty("--bracket-audio-spacer", spacer);
     return () => {
       document.documentElement.style.removeProperty("--bracket-audio-spacer");
     };
-  }, [docked]);
+  }, [docked, isEntryShareRoute]);
 
   useEffect(() => {
     return () => {
@@ -174,6 +193,9 @@ export function BracketAudioExperience() {
   }, [loadError]);
 
   useEffect(() => {
+    if (isEntryShareRoute) {
+      return;
+    }
     const a = audioRef.current;
     if (!a) {
       return;
@@ -198,10 +220,11 @@ export function BracketAudioExperience() {
     }
 
     return () => {
+      a.pause();
       a.removeEventListener("error", onError);
       a.removeEventListener("playing", onPlaying);
     };
-  }, []);
+  }, [isEntryShareRoute]);
 
   const runDockCollapse = useCallback(() => {
     const dock = dockRef.current;
@@ -355,6 +378,10 @@ export function BracketAudioExperience() {
 
   const barClass =
     `${styles.bar} ${docked && reduceMotion ? styles.barCollapsedRm : ""}`.trim();
+
+  if (isEntryShareRoute) {
+    return null;
+  }
 
   return (
     <>
