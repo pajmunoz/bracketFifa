@@ -1,16 +1,17 @@
 "use client";
 
 import type { FormEvent } from "react";
-import { useTranslations } from "next-intl";
 import { useCallback, useState } from "react";
+import { useTranslations } from "next-intl";
+import { useTransitionRouter } from "next-transition-router";
 import { useBracket } from "@/context/BracketContext";
+import { Link } from "@/i18n/routing";
 import { ROUTES } from "@/lib/routes";
-import { Link, useRouter } from "@/i18n/routing";
 import { clearBracketProgress } from "@/lib/bracketProgressPersistence";
 import { STORAGE_KEY } from "@/types/bracket";
 
 export function RegistrationSidebar() {
-  const router = useRouter();
+  const router = useTransitionRouter();
   const t = useTranslations("Registration");
   const {
     canSubmit,

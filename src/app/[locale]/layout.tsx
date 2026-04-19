@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
 import { Inter, Lexend, Space_Grotesk } from "next/font/google";
 import { BracketAudioExperience } from "@/components/BracketAudioExperience";
+import { RouteTransitionProvider } from "@/components/RouteTransitionProvider";
 import { routing } from "@/i18n/routing";
 
 const inter = Inter({
@@ -74,7 +75,7 @@ export default async function LocaleLayout({ children, params }: Props) {
       <body className="min-h-full overflow-x-hidden pb-[var(--bracket-audio-spacer,5.75rem)]">
         <NextIntlClientProvider messages={messages}>
           <BracketAudioExperience />
-          {children}
+          <RouteTransitionProvider>{children}</RouteTransitionProvider>
         </NextIntlClientProvider>
       </body>
     </html>

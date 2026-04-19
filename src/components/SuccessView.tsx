@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { useTransitionRouter } from "next-transition-router";
 import { useLocale, useTranslations } from "next-intl";
 import {
   startTransition,
@@ -15,7 +16,7 @@ import { buildSFMatches } from "@/lib/bracketKnockout";
 import { SUCCESS_BALL_TEXTURE, SUCCESS_STADIUM_BG } from "@/data/successAssets";
 import { entryShareAbsoluteUrl } from "@/lib/entrySharePath";
 import { ROUTES } from "@/lib/routes";
-import { routing, useRouter } from "@/i18n/routing";
+import { routing } from "@/i18n/routing";
 import type { BracketSubmission } from "@/types/bracket";
 import { clearBracketProgress } from "@/lib/bracketProgressPersistence";
 import { STORAGE_KEY } from "@/types/bracket";
@@ -23,7 +24,7 @@ import { Footer } from "@/components/Footer";
 import { SuccessHeader } from "@/components/SuccessHeader";
 
 export function SuccessView() {
-  const router = useRouter();
+  const router = useTransitionRouter();
   const locale = useLocale();
   const t = useTranslations("Success");
   const tVs = useTranslations("KnockoutRound");
