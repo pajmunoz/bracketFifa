@@ -6,8 +6,8 @@ const SHARE_WIDTH = 1200;
 /* fontEmbedCSS vacío + skipFonts: no leer cssRules de hojas cross-origin (Next/fonts → SecurityError). */
 const captureOptions = {
   backgroundColor: "#0f172a",
-  cacheBust: true,
-  fetchRequestInit: { mode: "cors" } as RequestInit,
+  cacheBust: false,
+  fetchRequestInit: { credentials: "omit", mode: "cors" } as RequestInit,
   fontEmbedCSS: "",
   height: SHARE_HEIGHT,
   pixelRatio: 2,
@@ -15,14 +15,28 @@ const captureOptions = {
   width: SHARE_WIDTH,
 } as const;
 
+function raf2(): Promise<void> {
+  return new Promise((resolve) => {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        resolve();
+      });
+    });
+  });
+}
+
 async function waitForShareImages(element: HTMLElement): Promise<void> {
   const images = [...element.querySelectorAll("img")];
   await Promise.all(
-    images.map((img) => {
-      if (img.complete && img.naturalWidth > 0) {
-        return Promise.resolve();
+    images.map(async (img) => {
+      if (!img.src) {
+        return;
       }
-      return new Promise<void>((resolve) => {
+      if (img.complete && img.naturalWidth > 0) {
+        await img.decode?.().catch(() => {});
+        return;
+      }
+      await new Promise<void>((resolve) => {
         const done = (): void => {
           img.removeEventListener("load", done);
           img.removeEventListener("error", done);
@@ -31,8 +45,13 @@ async function waitForShareImages(element: HTMLElement): Promise<void> {
         img.addEventListener("load", done, { once: true });
         img.addEventListener("error", done, { once: true });
       });
+      await img.decode?.().catch(() => {});
     }),
   );
+  await raf2();
+  await new Promise<void>((r) => {
+    window.setTimeout(r, 32);
+  });
 }
 
 export async function captureBracketShareCardAsPng(

@@ -176,12 +176,12 @@ export function SuccessView() {
     <div className="flex min-h-screen flex-col bg-surface font-body text-on-surface antialiased">
       <div
         aria-hidden
-        className="pointer-events-none fixed top-0 -left-[14000px] z-0"
+        className="pointer-events-none fixed top-0 left-0 z-0 h-[630px] w-[1200px] max-w-none opacity-0"
       >
         <BracketShareCard ref={shareCardRef} data={data} />
       </div>
       <SuccessHeader />
-      <main className="min-h-screen pb-16 pt-24">
+      <main className="relative z-10 min-h-screen pb-16 pt-24">
         <section className="relative min-h-[280px] overflow-hidden px-6 py-12 text-center lg:min-h-[320px] lg:py-20">
           <div className="absolute inset-0 -z-10 opacity-10">
             <Image

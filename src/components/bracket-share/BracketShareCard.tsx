@@ -10,6 +10,7 @@ import {
   buildR32Fixtures,
   buildSFMatches,
 } from "@/lib/bracketKnockout";
+import { flagImageProxyPath } from "@/lib/flagProxyPath";
 import { teamDisplayName } from "@/lib/teamDisplayName";
 import type { BracketSubmission } from "@/types/bracket";
 import styles from "@/components/bracket-share/BracketShareCard.module.css";
@@ -32,8 +33,9 @@ function ShareFlag({
       className={className}
       crossOrigin="anonymous"
       decoding="async"
-      referrerPolicy="no-referrer"
-      src={team.flagUrl}
+      fetchPriority="high"
+      loading="eager"
+      src={flagImageProxyPath(team.flagUrl)}
     />
   );
 }
