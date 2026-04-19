@@ -48,6 +48,8 @@ export type BracketSubmission = {
   entryId: string;
   groups: Record<string, string[]>;
   knockout: KnockoutData;
+  /** Idioma del envío (enlace en correo de confirmación). */
+  locale?: "en" | "es";
   marketingConsent: boolean;
   name: string;
   predictedWinnerCode: string;

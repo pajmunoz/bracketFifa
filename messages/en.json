@@ -19,8 +19,8 @@
     "copyCta": "Copy link",
     "copyFallback": "Copy this link:",
     "copied": "Copied",
-    "ctaBracket": "Go to bracket",
-    "ctaBracketHint": "Complete your prediction and submit it to enter the prize draw.",
+    "ctaBracket": "Make another prediction",
+    "ctaBracketHint": "Share with your friends for more chances to win.",
     "shareHint": "When you share only the link to this page, many social apps will show your bracket card automatically.",
     "subtitle": "Entry ID: {id}",
     "title": "Public prediction"

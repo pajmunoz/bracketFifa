@@ -452,6 +452,7 @@ export function BracketProvider({ children }: { children: ReactNode }) {
       entryId: randomEntryId(),
       groups: { ...groupOrders },
       knockout: knockoutForPayload,
+      locale: locale === "en" ? "en" : "es",
       marketingConsent: form.marketingConsent,
       name: form.name.trim(),
       predictedWinnerCode: champ?.code ?? "",

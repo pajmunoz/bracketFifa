@@ -57,9 +57,16 @@ export default async function LocaleLayout({ children, params }: Props) {
       lang={locale}
     >
       <head>
+        <link href="https://fonts.googleapis.com" rel="preconnect" />
+        <link
+          crossOrigin="anonymous"
+          href="https://fonts.gstatic.com"
+          rel="preconnect"
+        />
+        {/* display=swap: con optional la fuente puede no aplicarse en la 1ª carga si llega tarde (caché en recarga). */}
         {/* eslint-disable-next-line @next/next/no-page-custom-font -- Material Symbols not exposed via next/font */}
         <link
-          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&display=optional"
+          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&display=swap"
           rel="stylesheet"
         />
       </head>

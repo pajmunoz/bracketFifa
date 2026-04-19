@@ -253,12 +253,17 @@ export function parseBracketSubmissionBody(
     return null;
   }
 
+  const localeRaw = raw.locale;
+  const submissionLocale: "en" | "es" =
+    localeRaw === "en" ? "en" : "es";
+
   return {
     contestConsent: true,
     email: emailTrim,
     entryId: entryTrim,
     groups: groupOrders,
     knockout,
+    locale: submissionLocale,
     marketingConsent,
     name: name.trim().slice(0, 255),
     predictedWinnerCode: predictedWinnerCode.trim().slice(0, 8),

@@ -1,5 +1,6 @@
 import type { ResultSetHeader } from "mysql2";
 import { getPool } from "@/lib/db";
+import { sendSubmissionConfirmationEmail } from "@/lib/sendSubmissionConfirmationEmail";
 import { parseBracketSubmissionBody } from "@/lib/submissionPayload";
 
 export const maxDuration = 30;
@@ -52,6 +53,14 @@ export async function POST(request: Request) {
         JSON.stringify(payload.knockout),
       ],
     );
+
+    const emailOutcome = await sendSubmissionConfirmationEmail(payload);
+    if (!emailOutcome.ok) {
+      console.warn(
+        "[POST /api/submissions] confirmation email not sent:",
+        emailOutcome.error ?? "unknown",
+      );
+    }
 
     return Response.json(
       { entryId: payload.entryId, insertId: result.insertId },
