@@ -24,7 +24,6 @@
 
 .bar {
   align-items: center;
-  align-self: stretch;
   backdrop-filter: blur(14px);
   background: linear-gradient(
     90deg,
@@ -32,49 +31,23 @@
     rgba(15, 23, 42, 0.98) 50%,
     rgba(20, 27, 43, 0.97) 100%
   );
-  border-bottom-left-radius: 0;
-  border-bottom-right-radius: 0;
+  border-left: none;
+  border-radius: 0;
+  border-right: none;
   border-top: 1px solid rgba(16, 185, 129, 0.35);
-  border-top-left-radius: 0;
-  border-top-right-radius: 0;
-  box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.38);
+  box-sizing: border-box;
   display: flex;
   flex-shrink: 0;
-  gap: 14px;
-  max-width: 100%;
-  padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
-  padding-left: calc(14px + env(safe-area-inset-left, 0px));
-  padding-right: calc(14px + env(safe-area-inset-right, 0px));
+  gap: 10px;
+  max-width: none;
+  min-height: 52px;
+  padding-bottom: max(12px, env(safe-area-inset-bottom, 0px));
+  padding-left: max(12px, env(safe-area-inset-left, 0px));
+  padding-right: max(12px, env(safe-area-inset-right, 0px));
   padding-top: 10px;
   pointer-events: auto;
-  transform-origin: bottom right;
   width: 100%;
-}
-
-.barCollapsedRm {
-  border-bottom-left-radius: 18px;
-  border-bottom-right-radius: 18px;
-  border-top-left-radius: 18px;
-  border-top-right-radius: 18px;
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.42);
-  gap: 8px;
-  padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
-  padding-left: 12px;
-  padding-right: 12px;
-  padding-top: 8px;
-  transform: translateY(-6px);
-  width: min(92vw, 280px);
-}
-
-.barCollapsedRm .meta {
-  display: none;
-}
-
-.barCollapsedRm .tapOverlay {
-  font-size: 10px;
-  line-height: 1.25;
-  min-height: 34px;
-  padding: 6px 8px;
 }
 
 .meta {
@@ -103,6 +76,8 @@
   flex-shrink: 0;
   height: 44px;
   justify-content: center;
+  min-height: 44px;
+  min-width: 44px;
   transition: background-color 0.15s ease, border-color 0.15s ease;
   width: 44px;
 }
@@ -127,20 +102,19 @@
 }
 
 .shell {
-  align-items: flex-end;
+  align-items: stretch;
   bottom: 0;
+  box-sizing: border-box;
   display: flex;
+  flex-direction: column;
   justify-content: flex-end;
   left: 0;
+  padding: 0;
   pointer-events: none;
   position: fixed;
   right: 0;
+  width: 100%;
   z-index: 200;
-}
-
-.shellPadded {
-  padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
-  padding-right: calc(8px + env(safe-area-inset-right, 0px));
 }
 
 .tapOverlay {
@@ -155,7 +129,7 @@
   font-size: 12px;
   font-weight: 700;
   justify-content: center;
-  min-height: 40px;
+  min-height: 44px;
   padding: 8px 10px;
   text-align: center;
 }
@@ -175,4 +149,12 @@
 .tapAnim {
   flex: 1;
   min-width: 0;
+}
+
+@media (min-width: 480px) {
+  .bar {
+    gap: 14px;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+  }
 }
